@@ -1,0 +1,35 @@
+server:
+  # Vercel define PORT=80 en la imagen; en local se usa 8080
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: primer-empleo
+  datasource:
+    # Usar la cadena del "Session pooler" de Supabase (Project Settings > Database)
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    hikari:
+      # Cada instancia de Vercel abre su propio pool: mantenerlo pequeño
+      maximum-pool-size: 3
+      minimum-idle: 0
+      idle-timeout: 30000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+  main:
+    # Arranque más rápido en frío: los beans se crean al primer uso
+    lazy-initialization: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiracion-minutos: 120
+  cors:
+    # En Vercel front y back comparten dominio (no hace falta CORS);
+    # se mantiene para desarrollo local y Postman
+    origins: ${CORS_ORIGINS:http://localhost:5173}
