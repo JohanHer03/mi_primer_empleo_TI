@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-10-23 · Semana 0 (planeación)
+Última actualización: 2026-10-23 · Semana 1 (base del backend)
 
 ## Propósito
 
@@ -49,6 +49,13 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-10-23 | Spring Boot 3.5.16, MapStruct 1.6.3 y springdoc 2.9.1; sin Lombok | MapStruct reduce los mappers de la hexagonal; los DTOs ya son `record` y el dominio explícito se defiende mejor |
+| 2026-10-23 | Swagger en `/api/docs/swagger-ui.html` y OpenAPI en `/api/docs/openapi` | En Vercel solo `/api/*` llega al backend |
+| 2026-10-23 | Conexión a Supabase por el Session pooler `aws-1-us-west-2` (puerto 5432) | La conexión directa solo tiene IPv6; `aws-0` no reconoce el proyecto |
+| 2026-10-23 | Migración V2 retira permisos de `anon` y `authenticated` en `public` | Cierra la Data API de Supabase sin usar RLS; solo el backend accede por JDBC |
+| 2026-10-23 | Tablas de relación (`candidato_habilidades`, `vacante_habilidades`) con clave primaria compuesta | No necesitan id propio; en JPA se mapean con `@EmbeddedId` |
+| 2026-10-23 | Empresas → vacantes y vacantes → postulaciones con `ON DELETE RESTRICT` | Las vacantes se cierran, no se borran: se conserva el historial |
+| 2026-10-23 | Sin prueba `contextLoads`; pruebas web con `@WebMvcTest` | `./mvnw test` no debe depender de Supabase ni del `.env` |
 | 2026-10-23 | El agente `revisor-arquitectura` es solo lectura (Read, Grep, Glob) y recibe la lista de archivos cambiados de quien lo invoca | No puede ejecutar `git diff`; así no edita ni corre comandos |
 | 2026-10-21 | Supabase solo como PostgreSQL; autenticación con Spring Security + JWT | Requisito académico de usar Spring Security |
 | 2026-10-21 | Despliegue de front y back en Vercel con Docker, en un solo proyecto | Indicación del tutor; mismo dominio evita CORS. Plan B: backend en Render |
@@ -64,17 +71,18 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Fundamentación | Hecho | `docs/fundamentacion.md` |
 | CLAUDE.md y CONTEXT.md | Hecho | |
 | Archivos de despliegue | Hecho | `vercel.json`, `Dockerfile.vercel`, `docker-compose.yml` |
-| Skills y agentes de Claude Code | En curso | Hechos: skill `nueva-funcionalidad-hexagonal`, agente `revisor-arquitectura`. Faltan según `docs/prompts-claude-code.md` |
-| Proyecto Spring Boot | Pendiente | Semana 1 |
+| Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal` y `migracion-flyway`, agente `revisor-arquitectura`. Faltan según `docs/prompts-claude-code.md` |
+| Proyecto Spring Boot | Hecho | Paquetes hexagonales, errores uniformes, `SecurityConfig` sin estado (sin JWT aún), CORS, Swagger. Imagen `Dockerfile.vercel` probada con `docker compose up --build backend` (responde 401 en JSON) |
 | Proyecto React | Pendiente | Semana 1 |
-| Esquema y migraciones | Pendiente | Semana 1 |
+| Esquema y migraciones | Hecho | V1 (8 tablas) y V2 aplicadas en Supabase (PostgreSQL 17). Entidades JPA se crean con cada funcionalidad |
+| Despliegue de prueba en Vercel | Pendiente | Semana 1: configurar variables en Vercel y desplegar el backend |
 | Autenticación (HU-01, HU-06) | Pendiente | Semana 2 |
 
 ## Preguntas abiertas
 
 - [ ] Librería de estado y peticiones en React (React Query o fetch con Context).
-- [ ] ¿Usar Lombok y MapStruct?
-- [ ] ¿El tutor exige pruebas de integración además de las unitarias?
+- [x] ¿Usar Lombok y MapStruct? → MapStruct sí, Lombok no (2026-10-23).
+- [ ] ¿El tutor exige pruebas de integración además de las unitarias? Si sí, agregar Testcontainers (requiere Docker).
 - [ ] Fecha exacta de entrega y sustentación.
 
 ## Equipo

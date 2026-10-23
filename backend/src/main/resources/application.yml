@@ -25,6 +25,13 @@ spring:
     # Arranque más rápido en frío: los beans se crean al primer uso
     lazy-initialization: true
 
+springdoc:
+  # Bajo /api para que Vercel la envíe al backend (el resto de rutas va al frontend)
+  api-docs:
+    path: /api/docs/openapi
+  swagger-ui:
+    path: /api/docs/swagger-ui.html
+
 app:
   jwt:
     secret: ${JWT_SECRET}
