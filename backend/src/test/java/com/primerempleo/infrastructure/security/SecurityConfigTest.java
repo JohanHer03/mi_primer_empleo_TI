@@ -19,8 +19,12 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestPropertySource(properties = "app.cors.origins=http://localhost:5173")
 class SecurityConfigTest {
 
+    private final MockMvc mockMvc;
+
     @Autowired
-    private MockMvc mockMvc;
+    SecurityConfigTest(MockMvc mockMvc) {
+        this.mockMvc = mockMvc;
+    }
 
     @Test
     void deberiaResponder401ConFormatoUniformeSinToken() throws Exception {
