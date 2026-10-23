@@ -72,7 +72,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | CLAUDE.md y CONTEXT.md | Hecho | |
 | Archivos de despliegue | Hecho | `vercel.json`, `Dockerfile.vercel`, `docker-compose.yml` |
 | Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal` y `migracion-flyway`, agente `revisor-arquitectura`. Faltan según `docs/prompts-claude-code.md` |
-| Proyecto Spring Boot | Hecho | Paquetes hexagonales, errores uniformes, `SecurityConfig` sin estado (sin JWT aún), CORS, Swagger. Imagen Docker sin probar |
+| Proyecto Spring Boot | Hecho | Paquetes hexagonales, errores uniformes, `SecurityConfig` sin estado (sin JWT aún), CORS, Swagger. Imagen `Dockerfile.vercel` probada con `docker compose up --build backend` (responde 401 en JSON) |
 | Proyecto React | Pendiente | Semana 1 |
 | Esquema y migraciones | Hecho | V1 (8 tablas) y V2 aplicadas en Supabase (PostgreSQL 17). Entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Pendiente | Semana 1: configurar variables en Vercel y desplegar el backend |
