@@ -49,6 +49,11 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-10-23 | Email único sin distinguir mayúsculas (índice sobre `lower(email)`, V3) | Evita cuentas duplicadas; el adaptador debe buscar con `findByEmailIgnoreCase` |
+| 2026-10-23 | NIT guardado solo con dígitos (incluye dígito de verificación) | Que `UNIQUE (nit)` detecte el mismo NIT escrito con puntos o guion; el caso de uso lo normaliza |
+| 2026-10-23 | `semestre` obligatorio para `ESTUDIANTE` y vacío para `EGRESADO`; `fecha_cierre` ≥ día de publicación (hora de Colombia) | Coherencia de datos garantizada también en la base |
+| 2026-10-23 | `ManejadorGlobalErrores` hereda de `ResponseEntityExceptionHandler` y hay un `ControladorErrores` propio | Todos los errores de Spring MVC y los de filtros salen con su código correcto y el formato uniforme |
+| 2026-10-23 | En las pruebas también se inyecta por constructor (`@Autowired` en el constructor) | Cumple la regla de `CLAUDE.md` sin excepciones |
 | 2026-10-23 | Spring Boot 3.5.16, MapStruct 1.6.3 y springdoc 2.9.1; sin Lombok | MapStruct reduce los mappers de la hexagonal; los DTOs ya son `record` y el dominio explícito se defiende mejor |
 | 2026-10-23 | Swagger en `/api/docs/swagger-ui.html` y OpenAPI en `/api/docs/openapi` | En Vercel solo `/api/*` llega al backend |
 | 2026-10-23 | Conexión a Supabase por el Session pooler `aws-1-us-west-2` (puerto 5432) | La conexión directa solo tiene IPv6; `aws-0` no reconoce el proyecto |
@@ -74,7 +79,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal` y `migracion-flyway`, agente `revisor-arquitectura`. Faltan según `docs/prompts-claude-code.md` |
 | Proyecto Spring Boot | Hecho | Paquetes hexagonales, errores uniformes, `SecurityConfig` sin estado (sin JWT aún), CORS, Swagger. Imagen `Dockerfile.vercel` probada con `docker compose up --build backend` (responde 401 en JSON) |
 | Proyecto React | Pendiente | Semana 1 |
-| Esquema y migraciones | Hecho | V1 (8 tablas) y V2 aplicadas en Supabase (PostgreSQL 17). Entidades JPA se crean con cada funcionalidad |
+| Esquema y migraciones | Hecho | V1 (8 tablas) y V2 aplicadas en Supabase (PostgreSQL 17). V3 (ajustes de revisión) probada en PostgreSQL 17 local; se aplica en Supabase al arrancar la API tras fusionar. Entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Pendiente | Semana 1: configurar variables en Vercel y desplegar el backend |
 | Autenticación (HU-01, HU-06) | Pendiente | Semana 2 |
 
