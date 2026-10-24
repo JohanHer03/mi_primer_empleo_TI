@@ -49,6 +49,9 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-10-23 | Vercel en la región `pdx1` (Portland) | Supabase está en us-west-2 (Oregón): las consultas no cruzan el país |
+| 2026-10-23 | nginx del frontend escucha en `${PORT}` (plantilla de la imagen oficial, 80 por defecto) | La documentación de Vercel exige escuchar en el puerto que indica `PORT` |
+| 2026-10-23 | El dominio de producción `*.vercel.app` es público; las URL de cada deploy piden login de Vercel | Protección estándar de Vercel. Antes de tener datos reales, revisar si se protege también producción |
 | 2026-10-23 | Frontend: React Router, TanStack Query, react-hook-form + zod (`@hookform/resolvers` 5.9: la 6.0 tiene un conflicto de dependencias), CSS Modules, oxlint | Ruta aprobada en `docs/plan-frontend.md` |
 | 2026-10-23 | Token JWT en `localStorage` con copia en memoria; el frontend lee `sub`, `email`, `rol` y `exp` del token | Simple y sobrevive a recargas; el backend debe incluir esos campos en el JWT |
 | 2026-10-23 | API simulada con funciones propias en `src/api/mocks/` (`VITE_USAR_MOCKS=true`) | El frontend avanza sin esperar cada endpoint; sin dependencias extra |
@@ -84,7 +87,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Proyecto React (fase 0 de `docs/plan-frontend.md`) | Hecho | Vite + React 19 + TS, cliente único de la API, sesión con JWT, rutas y layouts por rol, 14 pantallas marcador, login simulado. Probado con `docker compose` junto al backend |
 | Frontend fases 1 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas) y V2 aplicadas en Supabase (PostgreSQL 17). V3 (ajustes de revisión) probada en PostgreSQL 17 local; se aplica en Supabase al arrancar la API tras fusionar. Entidades JPA se crean con cada funcionalidad |
-| Despliegue de prueba en Vercel | Pendiente | Semana 1: configurar variables en Vercel y desplegar el backend |
+| Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
 | Autenticación (HU-01, HU-06) | Pendiente | Semana 2 |
 
 ## Preguntas abiertas
