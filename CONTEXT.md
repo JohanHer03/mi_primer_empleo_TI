@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-10-23 · Semana 1 (base del backend)
+Última actualización: 2026-10-23 · Semana 1 cerrada; empieza la semana 2 (autenticación de punta a punta)
 
 ## Propósito
 
@@ -82,15 +82,15 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Fundamentación | Hecho | `docs/fundamentacion.md` |
 | CLAUDE.md y CONTEXT.md | Hecho | |
 | Archivos de despliegue | Hecho | `vercel.json`, `Dockerfile.vercel`, `docker-compose.yml` |
-| Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal` y `migracion-flyway`, agente `revisor-arquitectura`. Faltan según `docs/prompts-claude-code.md` |
+| Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal`, `migracion-flyway` y `pantalla-react`, agente `revisor-arquitectura`. Faltan la skill `endpoint-postman` (conviene crearla en la semana 2) y los agentes `escritor-pruebas` y `revisor-seguridad` (semanas 4 y 5) |
 | Proyecto Spring Boot | Hecho | Paquetes hexagonales, errores uniformes, `SecurityConfig` sin estado (sin JWT aún), CORS, Swagger. Imagen `Dockerfile.vercel` probada con `docker compose up --build backend` (responde 401 en JSON) |
 | Proyecto React (fase 0 de `docs/plan-frontend.md`) | Hecho | Vite + React 19 + TS, cliente único de la API, sesión con JWT, rutas y layouts por rol, 14 pantallas marcador, login simulado. Probado con `docker compose` junto al backend |
 | Landing pública en `/` | Hecho | Problema con cifras del DANE, diferencial, cómo funciona, empresas y ODS 8, según `docs/fundamentacion.md`. Con sesión, `/` sigue llevando al inicio del rol |
 | Frontend fase 1: registro y login (HU-01, HU-06) | Hecho con API simulada | Formularios de candidato y empresa según `docs/contrato-api.md`; falta probar contra el backend cuando existan los endpoints |
 | Frontend fases 2 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
-| Esquema y migraciones | Hecho | V1 (8 tablas) y V2 aplicadas en Supabase (PostgreSQL 17). V3 (ajustes de revisión) probada en PostgreSQL 17 local; se aplica en Supabase al arrancar la API tras fusionar. Entidades JPA se crean con cada funcionalidad |
+| Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API) y V3 (ajustes de revisión) aplicadas en Supabase (PostgreSQL 17); `flyway:info` las muestra en `Success`. Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
-| Autenticación (HU-01, HU-06) | Pendiente | Semana 2 |
+| Autenticación en el backend (HU-01, HU-06) | Pendiente | Semana 2: endpoints de `docs/contrato-api.md`, sección 2 (registro por rol, login y JWT). Requiere aprobar la dependencia de JWT y decidir cómo se crea el administrador. El frontend ya está listo con API simulada |
 
 ## Preguntas abiertas
 
@@ -107,8 +107,8 @@ Se instalan desde el directorio de plugins de Anthropic **a medida que se necesi
 
 | Plugin | Cuándo | Para qué | Estado |
 | --- | --- | --- | --- |
-| Java Backend Skills | Semana 1 | Spring Boot, Data, Security, Web y pruebas | Pendiente de instalar |
-| supabase | Semana 1 | PostgreSQL y consultar el esquema (sin su autenticación) | Pendiente de instalar |
+| Java Backend Skills | Semana 1 | Spring Boot, Data, Security, Web y pruebas | Instalado |
+| supabase | Semana 1 | PostgreSQL y consultar el esquema (sin su autenticación) | Instalado; su MCP necesita autorizarse con `/mcp` antes de usarlo |
 | code-review | Semana 3 | Revisión de pull requests | Pendiente de instalar |
 | postman | Semana 3 | Colección y pruebas de la API | Pendiente de instalar |
 | frontend-design | Semana 6 | Pulir la interfaz | Pendiente de instalar |
