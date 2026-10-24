@@ -90,6 +90,23 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 - [ ] ¿El tutor exige pruebas de integración además de las unitarias? Si sí, agregar Testcontainers (requiere Docker).
 - [ ] Fecha exacta de entrega y sustentación.
 
+## Plugins externos
+
+Se instalan desde el directorio de plugins de Anthropic **a medida que se necesitan**, no todos al inicio.
+`CLAUDE.md` manda sobre cualquier plugin: si uno sugiere algo contrario (otra arquitectura, Supabase Auth, otro formato de errores), se sigue `CLAUDE.md`.
+
+| Plugin | Cuándo | Para qué | Estado |
+| --- | --- | --- | --- |
+| Java Backend Skills | Semana 1 | Spring Boot, Data, Security, Web y pruebas | Pendiente de instalar |
+| supabase | Semana 1 | PostgreSQL y consultar el esquema (sin su autenticación) | Pendiente de instalar |
+| code-review | Semana 3 | Revisión de pull requests | Pendiente de instalar |
+| postman | Semana 3 | Colección y pruebas de la API | Pendiente de instalar |
+| frontend-design | Semana 6 | Pulir la interfaz | Pendiente de instalar |
+
+Notas de uso:
+- **supabase**: trae skills y herramientas de Auth, Storage, Edge Functions y RLS que este proyecto tiene prohibidas. Usarlo solo para consultar el esquema y buenas prácticas de PostgreSQL; si se conecta su MCP, en modo **Read-only**: el esquema solo cambia con migraciones de Flyway.
+- **code-review**: Claude Code ya incluye `/code-review` (se usó para revisar el PR #1); el plugin agrega la revisión de PR con varios agentes.
+
 ## Equipo
 
 | Persona | Rol principal |
