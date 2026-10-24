@@ -1,0 +1,72 @@
+.encabezado {
+  border-bottom: 1px solid var(--color-borde);
+  background: var(--color-superficie);
+}
+
+.barra {
+  max-width: var(--ancho-maximo);
+  margin: 0 auto;
+  padding: var(--espacio-3) var(--espacio-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3) var(--espacio-5);
+}
+
+.marca {
+  font-weight: 700;
+  color: var(--color-primario);
+  text-decoration: none;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-1) var(--espacio-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  flex: 1;
+}
+
+.enlace {
+  padding: var(--espacio-1) var(--espacio-2);
+  border-radius: var(--radio);
+  color: var(--color-texto-suave);
+  text-decoration: none;
+}
+
+.enlace:hover {
+  color: var(--color-texto);
+  background: var(--color-fondo);
+}
+
+.activo {
+  color: var(--color-primario);
+  font-weight: 600;
+}
+
+.usuario {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-3);
+  font-size: 0.9rem;
+  color: var(--color-texto-suave);
+}
+
+.contenido {
+  max-width: var(--ancho-maximo);
+  margin: 0 auto;
+  padding: var(--espacio-5) var(--espacio-4);
+}
+
+@media (max-width: 640px) {
+  .menu {
+    order: 3;
+    flex-basis: 100%;
+  }
+
+  .usuario span {
+    display: none;
+  }
+}

@@ -49,6 +49,9 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-10-23 | Frontend: React Router, TanStack Query, react-hook-form + zod (`@hookform/resolvers` 5.9: la 6.0 tiene un conflicto de dependencias), CSS Modules, oxlint | Ruta aprobada en `docs/plan-frontend.md` |
+| 2026-10-23 | Token JWT en `localStorage` con copia en memoria; el frontend lee `sub`, `email`, `rol` y `exp` del token | Simple y sobrevive a recargas; el backend debe incluir esos campos en el JWT |
+| 2026-10-23 | API simulada con funciones propias en `src/api/mocks/` (`VITE_USAR_MOCKS=true`) | El frontend avanza sin esperar cada endpoint; sin dependencias extra |
 | 2026-10-23 | Email único sin distinguir mayúsculas (índice sobre `lower(email)`, V3) | Evita cuentas duplicadas; el adaptador debe buscar con `findByEmailIgnoreCase` |
 | 2026-10-23 | NIT guardado solo con dígitos (incluye dígito de verificación) | Que `UNIQUE (nit)` detecte el mismo NIT escrito con puntos o guion; el caso de uso lo normaliza |
 | 2026-10-23 | `semestre` obligatorio para `ESTUDIANTE` y vacío para `EGRESADO`; `fecha_cierre` ≥ día de publicación (hora de Colombia) | Coherencia de datos garantizada también en la base |
@@ -78,14 +81,16 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Archivos de despliegue | Hecho | `vercel.json`, `Dockerfile.vercel`, `docker-compose.yml` |
 | Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal` y `migracion-flyway`, agente `revisor-arquitectura`. Faltan según `docs/prompts-claude-code.md` |
 | Proyecto Spring Boot | Hecho | Paquetes hexagonales, errores uniformes, `SecurityConfig` sin estado (sin JWT aún), CORS, Swagger. Imagen `Dockerfile.vercel` probada con `docker compose up --build backend` (responde 401 en JSON) |
-| Proyecto React | Pendiente | Semana 1 |
+| Proyecto React (fase 0 de `docs/plan-frontend.md`) | Hecho | Vite + React 19 + TS, cliente único de la API, sesión con JWT, rutas y layouts por rol, 14 pantallas marcador, login simulado. Probado con `docker compose` junto al backend |
+| Frontend fases 1 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas) y V2 aplicadas en Supabase (PostgreSQL 17). V3 (ajustes de revisión) probada en PostgreSQL 17 local; se aplica en Supabase al arrancar la API tras fusionar. Entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Pendiente | Semana 1: configurar variables en Vercel y desplegar el backend |
 | Autenticación (HU-01, HU-06) | Pendiente | Semana 2 |
 
 ## Preguntas abiertas
 
-- [ ] Librería de estado y peticiones en React (React Query o fetch con Context).
+- [x] Librería de estado y peticiones en React → TanStack Query (2026-10-23).
+- [ ] Contrato de la API (`docs/contrato-api.md`): DTOs de cada endpoint y los tres endpoints que faltan (ver `docs/plan-frontend.md`).
 - [x] ¿Usar Lombok y MapStruct? → MapStruct sí, Lombok no (2026-10-23).
 - [ ] ¿El tutor exige pruebas de integración además de las unitarias? Si sí, agregar Testcontainers (requiere Docker).
 - [ ] Fecha exacta de entrega y sustentación.
