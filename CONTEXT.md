@@ -85,7 +85,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal` y `migracion-flyway`, agente `revisor-arquitectura`. Faltan según `docs/prompts-claude-code.md` |
 | Proyecto Spring Boot | Hecho | Paquetes hexagonales, errores uniformes, `SecurityConfig` sin estado (sin JWT aún), CORS, Swagger. Imagen `Dockerfile.vercel` probada con `docker compose up --build backend` (responde 401 en JSON) |
 | Proyecto React (fase 0 de `docs/plan-frontend.md`) | Hecho | Vite + React 19 + TS, cliente único de la API, sesión con JWT, rutas y layouts por rol, 14 pantallas marcador, login simulado. Probado con `docker compose` junto al backend |
-| Frontend fases 1 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
+| Frontend fase 1: registro y login (HU-01, HU-06) | Hecho con API simulada | Formularios de candidato y empresa según `docs/contrato-api.md`; falta probar contra el backend cuando existan los endpoints |
+| Frontend fases 2 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas) y V2 aplicadas en Supabase (PostgreSQL 17). V3 (ajustes de revisión) probada en PostgreSQL 17 local; se aplica en Supabase al arrancar la API tras fusionar. Entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
 | Autenticación (HU-01, HU-06) | Pendiente | Semana 2 |
