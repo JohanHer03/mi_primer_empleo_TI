@@ -93,7 +93,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 ## Preguntas abiertas
 
 - [x] Librería de estado y peticiones en React → TanStack Query (2026-10-23).
-- [ ] Contrato de la API (`docs/contrato-api.md`): DTOs de cada endpoint y los tres endpoints que faltan (ver `docs/plan-frontend.md`).
+- [ ] Aprobar la propuesta de `docs/contrato-api.md` (backend): autenticación de la fase 1, registro separado por rol (`/api/auth/registro/candidato` y `/empresa`, en vez del único `/api/auth/registro` de la fundamentación) y los tres endpoints que faltaban.
 - [x] ¿Usar Lombok y MapStruct? → MapStruct sí, Lombok no (2026-10-23).
 - [ ] ¿El tutor exige pruebas de integración además de las unitarias? Si sí, agregar Testcontainers (requiere Docker).
 - [ ] Fecha exacta de entrega y sustentación.

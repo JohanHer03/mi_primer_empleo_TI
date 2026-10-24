@@ -46,12 +46,11 @@ de `docs/fundamentacion.md`. Cada fase termina con `npm run lint` y `npm run bui
 | `/admin/habilidades` | Catálogo de habilidades | ADMIN | 5 |
 | `/admin/empresas` | Empresas por verificar | ADMIN | 5 |
 
-## Contrato con el backend (pendiente de acordar)
+## Contrato con el backend
 
-Antes de cada fase se acuerdan las rutas y los DTOs (`docs/contrato-api.md`). Supuestos actuales del frontend:
+Antes de cada fase se acuerdan las rutas y los DTOs en [`docs/contrato-api.md`](contrato-api.md).
+Hoy tiene, como propuesta pendiente de aprobación del backend:
 
-- `POST /api/auth/login` responde `{ "token": "..." }` y el JWT trae `sub` (id del usuario), `email`, `rol` y `exp`.
-- Faltan en la tabla de endpoints de la fundamentación:
-  - listar empresas pendientes de verificar (HU-10), por ejemplo `GET /api/empresas?verificada=false`;
-  - listar las vacantes de la empresa autenticada, por ejemplo `GET /api/empresas/me/vacantes`;
-  - que `GET /api/vacantes` incluya la compatibilidad de cada vacante cuando consulta un candidato (HU-03 pide ordenar por ella).
+- convenciones generales (errores, paginación con `PaginaDto`, fechas);
+- autenticación de la fase 1: `POST /api/auth/registro/candidato`, `POST /api/auth/registro/empresa` y `POST /api/auth/login`, que responden `{ "token" }` con un JWT que trae `sub`, `email`, `rol` y `exp`;
+- los tres endpoints que faltaban: `GET /api/empresas`, `GET /api/empresas/me/vacantes` y la compatibilidad en `GET /api/vacantes`.
