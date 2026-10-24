@@ -26,6 +26,11 @@ Usuarios de demostración (contraseña `demo1234` para los tres):
 | candidato@demo.co | CANDIDATO |
 | empresa@demo.co | EMPRESA |
 | admin@demo.co | ADMIN |
+| inactivo@demo.co | CANDIDATO desactivado (el login responde 403) |
+
+Las cuentas creadas en `/registro` se guardan en `localStorage` de ese navegador (clave `primer-empleo.mock.cuentas`),
+contraseña incluida en texto plano: en modo simulado usa solo datos de prueba.
+El NIT `9001234567` ya pertenece a la empresa de demostración, sirve para probar el error de NIT repetido.
 
 Con `VITE_USAR_MOCKS=false` (o sin definir, como en Docker y Vercel) todas las llamadas van al backend.
 
