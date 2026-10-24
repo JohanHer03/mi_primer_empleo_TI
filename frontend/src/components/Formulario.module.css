@@ -1,0 +1,32 @@
+.formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+}
+
+.errorCampo {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-error);
+}
+
+.errorGeneral {
+  margin: 0;
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 1px solid var(--color-error-borde);
+  border-radius: var(--radio);
+  background: var(--color-error-fondo);
+  color: var(--color-error);
+}
+
+.nota {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--color-texto-suave);
+}

@@ -1,0 +1,139 @@
+/* Estilos base y variables. Los estilos de cada componente van en su CSS Module. */
+
+:root {
+  --color-fondo: #f6f7f9;
+  --color-superficie: #ffffff;
+  --color-texto: #1d2433;
+  --color-texto-suave: #5b6475;
+  --color-borde: #dde1e8;
+  --color-primario: #1f6feb;
+  --color-primario-hover: #1858c4;
+  --color-primario-texto: #ffffff;
+  --color-error: #b42318;
+  --color-error-fondo: #fef3f2;
+  --color-error-borde: #fecdca;
+  --color-exito: #067647;
+
+  --espacio-1: 0.25rem;
+  --espacio-2: 0.5rem;
+  --espacio-3: 0.75rem;
+  --espacio-4: 1rem;
+  --espacio-5: 1.5rem;
+  --espacio-6: 2rem;
+
+  --radio: 6px;
+  --radio-grande: 12px;
+  --sombra: 0 1px 3px rgb(16 24 40 / 0.08), 0 1px 2px rgb(16 24 40 / 0.04);
+  --ancho-maximo: 72rem;
+
+  color-scheme: light dark;
+  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+  color: var(--color-texto);
+  background: var(--color-fondo);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-fondo: #0f141c;
+    --color-superficie: #171d27;
+    --color-texto: #e6e9ef;
+    --color-texto-suave: #a3abba;
+    --color-borde: #2c3442;
+    --color-primario: #5b9bff;
+    --color-primario-hover: #7cafff;
+    --color-primario-texto: #0b1220;
+    --color-error: #ff8a80;
+    --color-error-fondo: #2a1715;
+    --color-error-borde: #5c2a25;
+    --color-exito: #47cd89;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--color-fondo);
+}
+
+h1 {
+  margin: 0 0 var(--espacio-4);
+  font-size: 1.5rem;
+  line-height: 1.25;
+}
+
+a {
+  color: var(--color-primario);
+}
+
+label {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: var(--espacio-2) var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+  color: inherit;
+  font: inherit;
+}
+
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--color-primario);
+  outline-offset: 2px;
+}
+
+input[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+/* Botones: clase global para usarla también en enlaces (<Link className="boton">) */
+.boton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--espacio-2);
+  padding: var(--espacio-2) var(--espacio-4);
+  border: 1px solid transparent;
+  border-radius: var(--radio);
+  background: var(--color-primario);
+  color: var(--color-primario-texto);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.boton:hover {
+  background: var(--color-primario-hover);
+}
+
+.boton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.boton-secundario {
+  background: transparent;
+  border-color: var(--color-borde);
+  color: var(--color-texto);
+}
+
+.boton-secundario:hover {
+  background: var(--color-fondo);
+}
