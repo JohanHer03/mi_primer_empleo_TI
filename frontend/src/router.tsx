@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router'
-import { RedireccionInicio } from './auth/RedireccionInicio'
+import { InicioSegunSesion } from './auth/InicioSegunSesion'
 import { RutaProtegida, SoloSinSesion } from './auth/RutaProtegida'
 import { ErrorDeRuta } from './components/ErrorDeRuta'
 import { LayoutApp } from './layouts/LayoutApp'
@@ -24,7 +24,7 @@ export const router = createBrowserRouter([
   {
     errorElement: <ErrorDeRuta />,
     children: [
-      { index: true, element: <RedireccionInicio /> },
+      { index: true, element: <InicioSegunSesion /> },
       {
         element: <SoloSinSesion />,
         children: [
