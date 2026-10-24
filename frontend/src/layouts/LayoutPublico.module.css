@@ -19,10 +19,15 @@
 }
 
 .marca {
-  margin: 0;
+  align-self: flex-start;
   font-weight: 700;
   color: var(--color-primario);
   letter-spacing: 0.02em;
+  text-decoration: none;
+}
+
+.marca:hover {
+  text-decoration: underline;
 }
 
 .pie {

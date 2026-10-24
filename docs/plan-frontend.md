@@ -31,6 +31,7 @@ de `docs/fundamentacion.md`. Cada fase termina con `npm run lint` y `npm run bui
 
 | Ruta | Pantalla | Rol | Fase |
 | --- | --- | --- | --- |
+| `/` | Landing (sin sesión); con sesión redirige al inicio del rol | público | 1 |
 | `/login` | Iniciar sesión | público | 1 |
 | `/registro`, `/registro?tipo=empresa` | Crear cuenta (candidato o empresa) | público | 1 |
 | `/candidato` | Inicio | CANDIDATO | 3 |

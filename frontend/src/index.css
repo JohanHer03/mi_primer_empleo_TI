@@ -13,6 +13,10 @@
   --color-error-fondo: #fef3f2;
   --color-error-borde: #fecdca;
   --color-exito: #067647;
+  --color-advertencia: #dc6803;
+  --color-advertencia-fondo: #fffaeb;
+  /* Rojo oficial del ODS 8 (Naciones Unidas) */
+  --color-ods: #a21942;
 
   --espacio-1: 0.25rem;
   --espacio-2: 0.5rem;
@@ -47,6 +51,21 @@
     --color-error-fondo: #2a1715;
     --color-error-borde: #5c2a25;
     --color-exito: #47cd89;
+    --color-advertencia: #fdb022;
+    --color-advertencia-fondo: #2b2111;
+    --color-ods: #8a1538;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Que los anclajes (#como-funciona) no queden bajo el encabezado fijo de la landing */
+  scroll-padding-top: 4.5rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
 }
 
