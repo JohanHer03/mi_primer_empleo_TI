@@ -1,5 +1,6 @@
 server {
-    listen 80;
+    # PORT lo define Vercel (80 por defecto); la imagen de nginx lo reemplaza al arrancar
+    listen ${PORT};
     server_name _;
     root /usr/share/nginx/html;
     index index.html;
