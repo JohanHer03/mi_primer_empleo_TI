@@ -1,14 +1,20 @@
 import type { ReactNode } from 'react'
 import { ErrorApi } from '../api/cliente'
+import { useDemoraLarga } from '../hooks/useDemoraLarga'
 import estilos from './Estados.module.css'
 
 // Estados obligatorios de cada pantalla (CLAUDE.md): carga, vacío y error.
 
 export function Cargando({ texto = 'Cargando…' }: { texto?: string }) {
+  // Si tarda, probablemente el backend está arrancando en frío
+  const demorado = useDemoraLarga(true)
   return (
     <div className={estilos.contenedor} role="status" aria-live="polite">
       <div className={estilos.spinner} aria-hidden="true" />
       <p className={estilos.descripcion}>{texto}</p>
+      {demorado && (
+        <p className={estilos.descripcion}>Estamos despertando el servidor; puede tardar unos segundos.</p>
+      )}
     </div>
   )
 }

@@ -6,10 +6,14 @@ import { z } from 'zod'
 import { login } from '../../api/auth'
 import { usarMocks } from '../../api/cliente'
 import { useAuth } from '../../auth/useAuth'
+import { idsDescripcion } from '../../components/accesibilidad'
+import { AvisoDemora } from '../../components/AvisoDemora'
+import { Campo } from '../../components/Campo'
 import formulario from '../../components/Formulario.module.css'
 
+// Validaciones de docs/contrato-api.md, sección 2.5
 const esquema = z.object({
-  email: z.email('Escribe un correo válido'),
+  email: z.string().trim().pipe(z.email('Escribe un correo válido')),
   password: z.string().min(1, 'Escribe tu contraseña'),
 })
 
@@ -36,29 +40,35 @@ export default function Login() {
     <>
       <h1>Iniciar sesión</h1>
       <form className={formulario.formulario} onSubmit={handleSubmit((datos) => mutacion.mutate(datos))} noValidate>
-        <div className={formulario.campo}>
-          <label htmlFor="email">Correo</label>
-          <input id="email" type="email" autoComplete="email" aria-invalid={!!errors.email} {...register('email')} />
-          {errors.email && <p className={formulario.errorCampo}>{errors.email.message}</p>}
-        </div>
+        <Campo id="email" etiqueta="Correo" error={errors.email?.message}>
+          <input
+            id="email"
+            type="email"
+            autoComplete="email"
+            aria-invalid={!!errors.email}
+            aria-describedby={idsDescripcion('email', errors.email?.message)}
+            {...register('email')}
+          />
+        </Campo>
 
-        <div className={formulario.campo}>
-          <label htmlFor="password">Contraseña</label>
+        <Campo id="password" etiqueta="Contraseña" error={errors.password?.message}>
           <input
             id="password"
             type="password"
             autoComplete="current-password"
             aria-invalid={!!errors.password}
+            aria-describedby={idsDescripcion('password', errors.password?.message)}
             {...register('password')}
           />
-          {errors.password && <p className={formulario.errorCampo}>{errors.password.message}</p>}
-        </div>
+        </Campo>
 
         {mutacion.isError && (
           <p className={formulario.errorGeneral} role="alert">
             {mutacion.error.message}
           </p>
         )}
+
+        <AvisoDemora activo={mutacion.isPending} />
 
         <button type="submit" className="boton" disabled={mutacion.isPending}>
           {mutacion.isPending ? 'Ingresando…' : 'Ingresar'}

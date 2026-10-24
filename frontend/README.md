@@ -32,6 +32,13 @@ Las cuentas creadas en `/registro` se guardan en `localStorage` de ese navegador
 contraseña incluida en texto plano: en modo simulado usa solo datos de prueba.
 El NIT `9001234567` ya pertenece a la empresa de demostración, sirve para probar el error de NIT repetido.
 
+Para simular una red lenta o el arranque en frío del backend (y ver los estados de carga y el aviso
+"Estamos despertando el servidor"), en la consola del navegador:
+
+```js
+localStorage.setItem('primer-empleo.mock.latencia', '9000')  // milisegundos; removeItem para volver a 400
+```
+
 Con `VITE_USAR_MOCKS=false` (o sin definir, como en Docker y Vercel) todas las llamadas van al backend.
 
 ## Estructura

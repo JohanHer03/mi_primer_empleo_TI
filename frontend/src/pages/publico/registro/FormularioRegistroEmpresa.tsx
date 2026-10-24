@@ -7,6 +7,7 @@ import { ErrorApi } from '../../../api/cliente'
 import type { RegistroEmpresaPeticion } from '../../../api/tipos'
 import { useAuth } from '../../../auth/useAuth'
 import { idsDescripcion } from '../../../components/accesibilidad'
+import { AvisoDemora } from '../../../components/AvisoDemora'
 import { Campo } from '../../../components/Campo'
 import { aplicarErroresDeValidacion } from '../../../components/erroresServidor'
 import formulario from '../../../components/Formulario.module.css'
@@ -159,6 +160,8 @@ export function FormularioRegistroEmpresa() {
           {errorGeneral}
         </p>
       )}
+
+      <AvisoDemora activo={mutacion.isPending} />
 
       <button type="submit" className="boton" disabled={mutacion.isPending}>
         {mutacion.isPending ? 'Creando cuenta…' : 'Crear cuenta de empresa'}
