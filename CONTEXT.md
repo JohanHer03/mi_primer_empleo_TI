@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-10-23 · Semana 1 cerrada; empieza la semana 2 (autenticación de punta a punta)
+Última actualización: 2026-10-27 · Semana 2 en curso: base de JWT lista; sigue registro y login
 
 ## Propósito
 
@@ -49,6 +49,10 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-10-27 | JWT con jjwt 0.13.0 (`jjwt-impl` y `jjwt-jackson` solo en ejecución), firmado con HS256 y `JWT_SECRET` de al menos 32 bytes | Librería más documentada; encaja con `JwtService` y `JwtAuthFilter` de `CLAUDE.md`. El servicio falla al crearse si el secreto es corto |
+| 2026-10-27 | `JwtAuthFilter` se crea dentro de `SecurityConfig` (no es `@Component`) y deja como principal un `UsuarioAutenticado` (id, email, rol) con la autoridad `ROLE_<rol>` | Evita que Spring Boot lo registre dos veces; los controladores leen el usuario con `@AuthenticationPrincipal` y el rol se exige con `@PreAuthorize("hasRole('...')")` |
+| 2026-10-27 | El administrador inicial lo crea un `ApplicationRunner` desde `ADMIN_EMAIL` y `ADMIN_PASSWORD` si no existe | El hash se calcula al arrancar: ningún secreto queda en las migraciones del repo público |
+| 2026-10-27 | Una cuenta desactivada conserva su token hasta que vence (120 min) | El JWT no guarda estado; aceptable para el MVP. El login sí rechaza cuentas inactivas (403) |
 | 2026-10-23 | Vercel en la región `pdx1` (Portland) | Supabase está en us-west-2 (Oregón): las consultas no cruzan el país |
 | 2026-10-23 | nginx del frontend escucha en `${PORT}` (plantilla de la imagen oficial, 80 por defecto) | La documentación de Vercel exige escuchar en el puerto que indica `PORT` |
 | 2026-10-23 | El dominio de producción `*.vercel.app` es público; las URL de cada deploy piden login de Vercel | Protección estándar de Vercel. Antes de tener datos reales, revisar si se protege también producción |
@@ -90,7 +94,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Frontend fases 2 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API) y V3 (ajustes de revisión) aplicadas en Supabase (PostgreSQL 17); `flyway:info` las muestra en `Success`. Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
-| Autenticación en el backend (HU-01, HU-06) | Pendiente | Semana 2: endpoints de `docs/contrato-api.md`, sección 2 (registro por rol, login y JWT). Requiere aprobar la dependencia de JWT y decidir cómo se crea el administrador. El frontend ya está listo con API simulada |
+| Autenticación en el backend (HU-01, HU-06) | En curso | Hecho (rama `feat/backend-jwt`): `JwtService`, `JwtAuthFilter`, BCrypt y enum `Rol`, con pruebas. Falta (`feat/backend-autenticacion`): dominio, casos de uso, persistencia y controlador de registro y login de `docs/contrato-api.md`, sección 2, el administrador inicial y Postman. El frontend ya está listo con API simulada |
 
 ## Preguntas abiertas
 
