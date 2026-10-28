@@ -41,7 +41,7 @@ class AdministradorServiceTest {
         boolean creado = servicio.crearSiNoExiste("Admin@PrimerEmpleo.co", "ClaveDelAdmin2026");
 
         ArgumentCaptor<Usuario> usuario = ArgumentCaptor.forClass(Usuario.class);
-        verify(usuarios).guardar(usuario.capture());
+        verify(usuarios).crear(usuario.capture());
         assertThat(creado).isTrue();
         assertThat(usuario.getValue().email()).isEqualTo("admin@primerempleo.co");
         assertThat(usuario.getValue().rol()).isEqualTo(Rol.ADMIN);
@@ -55,7 +55,7 @@ class AdministradorServiceTest {
         boolean creado = servicio.crearSiNoExiste("admin@primerempleo.co", "ClaveDelAdmin2026");
 
         assertThat(creado).isFalse();
-        verify(usuarios, never()).guardar(any());
+        verify(usuarios, never()).crear(any());
         verify(cifrador, never()).cifrar(any());
     }
 
@@ -63,6 +63,6 @@ class AdministradorServiceTest {
     void deberiaRechazarUnaContrasenaCorta() {
         assertThatThrownBy(() -> servicio.crearSiNoExiste("admin@primerempleo.co", "corta"))
                 .isInstanceOf(DatosInvalidosException.class);
-        verify(usuarios, never()).guardar(any());
+        verify(usuarios, never()).crear(any());
     }
 }

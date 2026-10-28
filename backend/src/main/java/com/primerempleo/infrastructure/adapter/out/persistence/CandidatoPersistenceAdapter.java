@@ -16,7 +16,7 @@ public class CandidatoPersistenceAdapter implements CandidatoRepositoryPort {
     }
 
     @Override
-    public Candidato guardar(Candidato candidato) {
+    public Candidato crear(Candidato candidato) {
         return mapper.aDominio(repositorio.save(mapper.aEntidad(candidato)));
     }
 }

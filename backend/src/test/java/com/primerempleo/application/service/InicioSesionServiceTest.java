@@ -62,8 +62,8 @@ class InicioSesionServiceTest {
         assertThatThrownBy(() -> servicio.iniciarSesion(new IniciarSesionComando("nadie@udea.edu.co", "Medellin2026")))
                 .isInstanceOf(CredencialesInvalidasException.class)
                 .hasMessage("Correo o contraseña incorrectos");
-        // Se cifra igual para que la respuesta tarde lo mismo que con un correo existente
-        verify(cifrador).cifrar("Medellin2026");
+        // Se compara igual para que la respuesta tarde lo mismo que con un correo existente
+        verify(cifrador).simularComparacion("Medellin2026");
         verify(generadorToken, never()).generarToken(any());
     }
 

@@ -34,8 +34,8 @@ public class InicioSesionService implements IniciarSesionUseCase {
     public String iniciarSesion(IniciarSesionComando comando) {
         Optional<Usuario> encontrado = usuarios.buscarPorEmail(Usuario.normalizarEmail(comando.email()));
         if (encontrado.isEmpty()) {
-            // Cifrar igual cuesta lo mismo que comparar: la respuesta tarda parecido exista o no el correo
-            cifrador.cifrar(comando.password());
+            // Comparar igual, así la respuesta tarda parecido exista o no el correo
+            cifrador.simularComparacion(comando.password());
             throw new CredencialesInvalidasException();
         }
 

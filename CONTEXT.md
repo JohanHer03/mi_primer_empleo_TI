@@ -49,6 +49,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-10-27 | Contraseña nueva: mínimo 8 caracteres y máximo 72 **bytes** (`PoliticaContrasena`, en el dominio) | BCrypt 6.5 lanza excepción con más de 72 bytes: 40 letras con tilde pasaban el `@Size` del DTO y daban 500 |
+| 2026-10-27 | Los puertos de salida tienen `crear(...)`, no `guardar(...)`; para editar habrá que cargar la entidad con `findById` | Una entidad que sale del mapper se marca como nueva (`Persistable`) y al actualizar daría clave duplicada |
 | 2026-10-27 | Los UUID los genera el dominio (`Usuario.nuevo`, ...); las entidades heredan de `EntidadConIdAsignado` (`Persistable`) | El caso de uso arma usuario y perfil completos antes de guardar, y Spring Data hace un solo INSERT sin el SELECT previo |
 | 2026-10-27 | El correo se guarda en minúsculas y se busca con `lower(email) = lower(:email)` en `@Query` | Usa la misma expresión del índice único de V3 (`findByEmailIgnoreCase` generaría `upper()` y no usaría el índice) |
 | 2026-10-27 | Registro: primero reglas del dominio (400), luego duplicados (409); un `DataIntegrityViolationException` con `uq_usuarios_email` o `uq_empresas_nit` también responde 409 | Respuestas coherentes, incluso si dos registros iguales llegan a la vez |
@@ -99,7 +101,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Frontend fases 2 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API) y V3 (ajustes de revisión) aplicadas en Supabase (PostgreSQL 17); `flyway:info` las muestra en `Success`. Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
-| Autenticación en el backend (HU-01, HU-06) | En curso | Base de JWT en el PR #11. Registro de candidato y empresa, login y administrador inicial en la rama `feat/backend-autenticacion` (71 pruebas en verde); probados contra Supabase, con el frontend real (`VITE_USAR_MOCKS=false`) y con la colección de Postman. Falta: fusionar, cargar `ADMIN_EMAIL` y `ADMIN_PASSWORD` en Vercel y probar desplegado |
+| Autenticación en el backend (HU-01, HU-06) | En curso | Base de JWT en el PR #11. Registro de candidato y empresa, login y administrador inicial en la rama `feat/backend-autenticacion` (78 pruebas en verde, revisados por `revisor-arquitectura`); probados contra Supabase, con el frontend real (`VITE_USAR_MOCKS=false`) y con la colección de Postman. Falta: fusionar, cargar `ADMIN_EMAIL` y `ADMIN_PASSWORD` en Vercel y probar desplegado |
 
 ## Preguntas abiertas
 

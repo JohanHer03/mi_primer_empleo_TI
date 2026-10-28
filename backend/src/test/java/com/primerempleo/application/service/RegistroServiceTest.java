@@ -58,8 +58,8 @@ class RegistroServiceTest {
 
         ArgumentCaptor<Usuario> usuario = ArgumentCaptor.forClass(Usuario.class);
         ArgumentCaptor<Candidato> candidato = ArgumentCaptor.forClass(Candidato.class);
-        verify(usuarios).guardar(usuario.capture());
-        verify(candidatos).guardar(candidato.capture());
+        verify(usuarios).crear(usuario.capture());
+        verify(candidatos).crear(candidato.capture());
         assertThat(token).isEqualTo("token-jwt");
         assertThat(usuario.getValue().email()).isEqualTo("laura.gomez@udea.edu.co");
         assertThat(usuario.getValue().passwordHash()).isEqualTo("$2a$10$hash");
@@ -76,8 +76,8 @@ class RegistroServiceTest {
         assertThatThrownBy(() -> servicio.registrar(candidato("LAURA@udea.edu.co", EstadoAcademico.EGRESADO, null)))
                 .isInstanceOf(RecursoDuplicadoException.class)
                 .hasMessage("Ya existe una cuenta con ese correo");
-        verify(usuarios, never()).guardar(any());
-        verify(candidatos, never()).guardar(any());
+        verify(usuarios, never()).crear(any());
+        verify(candidatos, never()).crear(any());
     }
 
     @Test
@@ -87,8 +87,8 @@ class RegistroServiceTest {
         assertThatThrownBy(() -> servicio.registrar(candidato("laura@udea.edu.co", EstadoAcademico.ESTUDIANTE, null)))
                 .isInstanceOf(DatosInvalidosException.class)
                 .hasMessage("semestre: es obligatorio para estudiantes");
-        verify(usuarios, never()).guardar(any());
-        verify(candidatos, never()).guardar(any());
+        verify(usuarios, never()).crear(any());
+        verify(candidatos, never()).crear(any());
     }
 
     @Test
@@ -100,8 +100,8 @@ class RegistroServiceTest {
 
         ArgumentCaptor<Usuario> usuario = ArgumentCaptor.forClass(Usuario.class);
         ArgumentCaptor<Empresa> empresa = ArgumentCaptor.forClass(Empresa.class);
-        verify(usuarios).guardar(usuario.capture());
-        verify(empresas).guardar(empresa.capture());
+        verify(usuarios).crear(usuario.capture());
+        verify(empresas).crear(empresa.capture());
         verify(empresas).existePorNit("9001234567");
         assertThat(token).isEqualTo("token-jwt");
         assertThat(usuario.getValue().rol()).isEqualTo(Rol.EMPRESA);
@@ -118,8 +118,8 @@ class RegistroServiceTest {
         assertThatThrownBy(() -> servicio.registrar(empresa("otra@empresa.co", "9001234567")))
                 .isInstanceOf(RecursoDuplicadoException.class)
                 .hasMessage("Ya existe una empresa registrada con ese NIT");
-        verify(usuarios, never()).guardar(any());
-        verify(empresas, never()).guardar(any());
+        verify(usuarios, never()).crear(any());
+        verify(empresas, never()).crear(any());
     }
 
     @Test
@@ -130,7 +130,7 @@ class RegistroServiceTest {
         assertThatThrownBy(() -> servicio.registrar(empresa("talento@softwaremedellin.co", "9001234567")))
                 .isInstanceOf(RecursoDuplicadoException.class)
                 .hasMessage("Ya existe una cuenta con ese correo");
-        verify(empresas, never()).guardar(any());
+        verify(empresas, never()).crear(any());
     }
 
     @Test
@@ -139,7 +139,21 @@ class RegistroServiceTest {
 
         assertThatThrownBy(() -> servicio.registrar(empresa("talento@softwaremedellin.co", "NIT-123")))
                 .isInstanceOf(DatosInvalidosException.class);
-        verify(usuarios, never()).guardar(any());
+        verify(usuarios, never()).crear(any());
+    }
+
+    @Test
+    void deberiaRechazarUnaContrasenaDeMasDe72BytesSinCifrarla() {
+        RegistrarCandidatoComando base = candidato("laura@udea.edu.co", EstadoAcademico.EGRESADO, null);
+        RegistrarCandidatoComando conTildes = new RegistrarCandidatoComando(base.email(), "á".repeat(40),
+                base.nombres(), base.apellidos(), base.estadoAcademico(), base.semestre(), base.universidad(),
+                base.programa(), base.ciudad());
+
+        assertThatThrownBy(() -> servicio.registrar(conTildes))
+                .isInstanceOf(DatosInvalidosException.class)
+                .hasMessageStartingWith("password:");
+        verify(cifrador, never()).cifrar(any());
+        verify(usuarios, never()).crear(any());
     }
 
     private static RegistrarCandidatoComando candidato(String email, EstadoAcademico estado, Integer semestre) {

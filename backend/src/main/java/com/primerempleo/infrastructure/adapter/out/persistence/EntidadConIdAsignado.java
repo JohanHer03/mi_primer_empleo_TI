@@ -12,6 +12,7 @@ import org.springframework.data.domain.Persistable;
  * Base de las entidades cuyo UUID lo genera el dominio.
  * Con el id ya asignado, Spring Data creería que la fila existe y haría un SELECT antes de cada INSERT;
  * {@link Persistable#isNew()} le indica que es nueva hasta que se guarda o se carga.
+ * Por eso una entidad creada desde el mapper solo sirve para insertar: para actualizar, cargarla con findById.
  */
 @MappedSuperclass
 public abstract class EntidadConIdAsignado implements Persistable<UUID> {

@@ -27,7 +27,7 @@ public class UsuarioPersistenceAdapter implements UsuarioRepositoryPort {
     }
 
     @Override
-    public Usuario guardar(Usuario usuario) {
+    public Usuario crear(Usuario usuario) {
         return mapper.aDominio(repositorio.save(mapper.aEntidad(usuario)));
     }
 }

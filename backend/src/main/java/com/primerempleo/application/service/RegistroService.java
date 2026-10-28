@@ -10,6 +10,7 @@ import com.primerempleo.application.port.out.UsuarioRepositoryPort;
 import com.primerempleo.domain.exception.RecursoDuplicadoException;
 import com.primerempleo.domain.model.Candidato;
 import com.primerempleo.domain.model.Empresa;
+import com.primerempleo.domain.model.PoliticaContrasena;
 import com.primerempleo.domain.model.Rol;
 import com.primerempleo.domain.model.Usuario;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
  */
 @Service
 public class RegistroService implements RegistrarCandidatoUseCase, RegistrarEmpresaUseCase {
-
-    static final String CORREO_REPETIDO = "Ya existe una cuenta con ese correo";
-    static final String NIT_REPETIDO = "Ya existe una empresa registrada con ese NIT";
 
     private final UsuarioRepositoryPort usuarios;
     private final CandidatoRepositoryPort candidatos;
@@ -45,6 +43,7 @@ public class RegistroService implements RegistrarCandidatoUseCase, RegistrarEmpr
     @Override
     @Transactional
     public String registrar(RegistrarCandidatoComando comando) {
+        PoliticaContrasena.validar(comando.password());
         Usuario usuario = Usuario.nuevo(comando.email(), cifrador.cifrar(comando.password()), Rol.CANDIDATO);
         Candidato candidato = Candidato.nuevo(usuario.id(), comando.nombres(), comando.apellidos(),
                 comando.universidad(), comando.programa(), comando.estadoAcademico(), comando.semestre(),
@@ -52,31 +51,32 @@ public class RegistroService implements RegistrarCandidatoUseCase, RegistrarEmpr
 
         exigirCorreoLibre(usuario);
 
-        usuarios.guardar(usuario);
-        candidatos.guardar(candidato);
+        usuarios.crear(usuario);
+        candidatos.crear(candidato);
         return generadorToken.generarToken(usuario);
     }
 
     @Override
     @Transactional
     public String registrar(RegistrarEmpresaComando comando) {
+        PoliticaContrasena.validar(comando.password());
         Usuario usuario = Usuario.nuevo(comando.email(), cifrador.cifrar(comando.password()), Rol.EMPRESA);
         Empresa empresa = Empresa.nueva(usuario.id(), comando.razonSocial(), comando.nit(), comando.sector(),
                 comando.ciudad(), comando.sitioWeb());
 
         exigirCorreoLibre(usuario);
         if (empresas.existePorNit(empresa.nit())) {
-            throw new RecursoDuplicadoException(NIT_REPETIDO);
+            throw RecursoDuplicadoException.nitRepetido();
         }
 
-        usuarios.guardar(usuario);
-        empresas.guardar(empresa);
+        usuarios.crear(usuario);
+        empresas.crear(empresa);
         return generadorToken.generarToken(usuario);
     }
 
     private void exigirCorreoLibre(Usuario usuario) {
         if (usuarios.existePorEmail(usuario.email())) {
-            throw new RecursoDuplicadoException(CORREO_REPETIDO);
+            throw RecursoDuplicadoException.correoRepetido();
         }
     }
 }

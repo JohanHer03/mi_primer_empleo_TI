@@ -21,7 +21,7 @@ public class EmpresaPersistenceAdapter implements EmpresaRepositoryPort {
     }
 
     @Override
-    public Empresa guardar(Empresa empresa) {
+    public Empresa crear(Empresa empresa) {
         return mapper.aDominio(repositorio.save(mapper.aEntidad(empresa)));
     }
 }

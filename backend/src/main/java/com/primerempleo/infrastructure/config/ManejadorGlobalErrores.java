@@ -69,10 +69,10 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
     public ResponseEntity<Object> manejarIntegridad(DataIntegrityViolationException ex) {
         String detalle = String.valueOf(ex.getMostSpecificCause().getMessage());
         if (detalle.contains("uq_usuarios_email")) {
-            return responder(HttpStatus.CONFLICT, "Ya existe una cuenta con ese correo");
+            return responder(HttpStatus.CONFLICT, RecursoDuplicadoException.correoRepetido().getMessage());
         }
         if (detalle.contains("uq_empresas_nit")) {
-            return responder(HttpStatus.CONFLICT, "Ya existe una empresa registrada con ese NIT");
+            return responder(HttpStatus.CONFLICT, RecursoDuplicadoException.nitRepetido().getMessage());
         }
         log.warn("Restricción de la base de datos violada: {}", detalle);
         return responder(HttpStatus.CONFLICT, ErrorResponse.mensajePorDefecto(HttpStatus.CONFLICT));
