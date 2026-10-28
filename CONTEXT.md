@@ -49,6 +49,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-10-27 | `server.forward-headers-strategy: framework`: Spring toma el host y el protocolo de `X-Forwarded-Host` y `X-Forwarded-Proto` | Detrás del proxy de Vercel, Spring veía un host interno y rechazaba con 403 "Invalid CORS request" el `Origin` del propio dominio (el login desde el navegador fallaba aunque curl funcionaba) |
 | 2026-10-27 | Contraseña nueva: mínimo 8 caracteres y máximo 72 **bytes** (`PoliticaContrasena`, en el dominio) | BCrypt 6.5 lanza excepción con más de 72 bytes: 40 letras con tilde pasaban el `@Size` del DTO y daban 500 |
 | 2026-10-27 | Los puertos de salida tienen `crear(...)`, no `guardar(...)`; para editar habrá que cargar la entidad con `findById` | Una entidad que sale del mapper se marca como nueva (`Persistable`) y al actualizar daría clave duplicada |
 | 2026-10-27 | Los UUID los genera el dominio (`Usuario.nuevo`, ...); las entidades heredan de `EntidadConIdAsignado` (`Persistable`) | El caso de uso arma usuario y perfil completos antes de guardar, y Spring Data hace un solo INSERT sin el SELECT previo |
