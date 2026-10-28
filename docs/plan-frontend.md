@@ -50,8 +50,9 @@ de `docs/fundamentacion.md`. Cada fase termina con `npm run lint` y `npm run bui
 ## Contrato con el backend
 
 Antes de cada fase se acuerdan las rutas y los DTOs en [`docs/contrato-api.md`](contrato-api.md).
-Hoy tiene, como propuesta pendiente de aprobación del backend:
+Hoy tiene:
 
-- convenciones generales (errores, paginación con `PaginaDto`, fechas);
-- autenticación de la fase 1: `POST /api/auth/registro/candidato`, `POST /api/auth/registro/empresa` y `POST /api/auth/login`, que responden `{ "token" }` con un JWT que trae `sub`, `email`, `rol` y `exp`;
-- los tres endpoints que faltaban: `GET /api/empresas`, `GET /api/empresas/me/vacantes` y la compatibilidad en `GET /api/vacantes`.
+- **Acordado:** convenciones generales (errores, paginación con `PaginaDto`, fechas); autenticación de la fase 1
+  (`POST /api/auth/registro/candidato`, `/registro/empresa` y `/login`, que responden `{ "token" }`);
+  y los tres endpoints que faltaban (`GET /api/empresas`, `GET /api/empresas/me/vacantes` y la compatibilidad en `GET /api/vacantes`).
+- **Propuesta para la fase 2:** catálogo de habilidades, perfil de empresa, verificación de empresas (solo backend) y CRUD de vacantes (sección 4).

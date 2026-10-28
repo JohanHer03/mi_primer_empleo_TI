@@ -8,6 +8,7 @@ Se completa antes de cada fase del plan (`docs/plan-frontend.md`). Las rutas gen
 | Convenciones generales | **Acordado** (2026-10-27). `PaginaDto` se implementa con el primer listado (semana 3) |
 | Autenticación (fase 1) | **Acordado** (2026-10-27). Implementado y en producción (PR #11, #12 y #13) |
 | Endpoints que faltan en la fundamentación | **Acordado** (2026-10-27). Sus DTOs completos se detallan antes de cada fase |
+| Fase 2: habilidades, empresas y vacantes (semana 3) | Propuesta (2026-10-27); queda acordada al fusionar su PR |
 
 Cuando el backend apruebe una sección, se cambia su estado a **Acordado** y cualquier cambio posterior se hace con un pull request que toque este archivo.
 
@@ -264,3 +265,173 @@ Responde `PaginaDto<VacanteResumen>`:
 ```
 
 El detalle con "lo que te falta" sigue en `GET /api/vacantes/{id}/compatibilidad` (fundamentación, HU-04).
+
+---
+
+## 4. Fase 2: habilidades, empresas y vacantes (semana 3: HU-06, HU-07 y parte de HU-10)
+
+Entregable: una empresa verificada publica, edita, cierra y lista sus vacantes.
+Para poder probarlo de punta a punta se adelanta el **backend** de la verificación de empresas (HU-10);
+su pantalla sigue en la fase 5 del frontend.
+
+**Fechas "vigentes":** se comparan con el día actual en hora de Colombia (`America/Bogota`), igual que la restricción `ck_vacantes_fecha_cierre` de V3.
+
+### 4.1 Habilidades
+
+`HabilidadDto`:
+
+```json
+{ "id": "…", "nombre": "Spring Boot", "categoria": "FRAMEWORK" }
+```
+
+`categoria`: `LENGUAJE`, `FRAMEWORK`, `BASE_DATOS`, `HERRAMIENTA` o `BLANDA`.
+
+| Endpoint | Rol | Respuesta |
+| --- | --- | --- |
+| `GET /api/habilidades?categoria=FRAMEWORK` | Autenticado | 200 con **lista** `HabilidadDto[]`, ordenada por categoría y nombre. `categoria` es opcional |
+| `POST /api/habilidades` | ADMIN | 201 `HabilidadDto`; 400 validación; 409 `"Ya existe una habilidad con ese nombre"` |
+
+- **Excepción a la paginación:** el catálogo responde la lista completa porque alimenta los selectores
+  de los formularios y es pequeño (decenas de elementos). Si pasara de 200, se pagina.
+- **Cuerpo del POST:** `{ "nombre": "Kotlin", "categoria": "LENGUAJE" }`. `nombre`: `@NotBlank @Size(max = 100)`, se recorta.
+  `categoria`: `@NotNull`. El nombre es único **sin distinguir mayúsculas** (`kotlin` = `Kotlin`).
+- Editar y borrar habilidades quedan fuera del MVP (no están en la fundamentación).
+
+**Migración `V4__catalogo_habilidades.sql`:**
+
+1. Cambia `uq_habilidades_nombre` por un índice único sobre `lower(nombre)`, como se hizo con el correo en V3.
+2. Inserta el catálogo inicial (catálogo de referencia, no datos personales):
+
+| Categoría | Habilidades |
+| --- | --- |
+| LENGUAJE | Java, JavaScript, TypeScript, Python, C#, Kotlin, PHP, Go, SQL |
+| FRAMEWORK | Spring Boot, React, Angular, Vue.js, Node.js, Express, .NET, Django |
+| BASE_DATOS | PostgreSQL, MySQL, SQL Server, MongoDB, Redis |
+| HERRAMIENTA | Git, Docker, Linux, AWS, Azure, Postman, Jira, Scrum |
+| BLANDA | Trabajo en equipo, Comunicación, Resolución de problemas, Aprendizaje autónomo, Inglés |
+
+### 4.2 Perfil de empresa (HU-06)
+
+`EmpresaPerfilDto`:
+
+```json
+{
+  "id": "…",
+  "razonSocial": "Software Medellín S.A.S.",
+  "nit": "9001234567",
+  "email": "talento@softwaremedellin.co",
+  "sector": "Desarrollo de software",
+  "ciudad": "Medellín",
+  "sitioWeb": "https://softwaremedellin.co",
+  "verificada": false
+}
+```
+
+| Endpoint | Rol | Respuesta |
+| --- | --- | --- |
+| `GET /api/empresas/me` | EMPRESA | 200 `EmpresaPerfilDto` |
+| `PUT /api/empresas/me` | EMPRESA | 200 `EmpresaPerfilDto`; 400 validación |
+
+- **Cuerpo del PUT** (`ActualizarEmpresaPeticion`): `razonSocial`, `sector`, `ciudad` y `sitioWeb`, con las mismas validaciones que el registro (2.4).
+- El **NIT y el correo no se editan**: el NIT identifica a la empresa que el administrador verificó,
+  y el correo es la cuenta de inicio de sesión.
+- La empresa siempre trabaja sobre su propio perfil (el id sale del token), así que no hay 403 por propiedad.
+
+### 4.3 Verificación de empresas (HU-10, solo backend en esta fase)
+
+| Endpoint | Rol | Respuesta |
+| --- | --- | --- |
+| `GET /api/empresas?verificada=false&page=0&size=10` | ADMIN | 200 `PaginaDto<EmpresaResumen>` (definido en 3.1) |
+| `PATCH /api/empresas/{id}/verificar` | ADMIN | 200 `EmpresaResumen`; 404 `"La empresa no existe"` |
+
+- Sin cuerpo. Es **idempotente**: verificar una empresa ya verificada responde 200 sin cambios.
+- Quitar la verificación queda fuera del MVP.
+
+### 4.4 Vacantes (HU-07)
+
+**Entrada** (`VacantePeticion`, la misma para crear y editar):
+
+```json
+{
+  "titulo": "Desarrollador Java junior",
+  "descripcion": "Apoyarás el desarrollo de APIs REST para clientes del sector financiero en Medellín…",
+  "tipo": "JUNIOR",
+  "modalidad": "HIBRIDA",
+  "ciudad": "Medellín",
+  "salarioMin": 2800000,
+  "salarioMax": 3500000,
+  "fechaCierre": "2026-11-30",
+  "habilidades": [
+    { "habilidadId": "…", "nivelRequerido": "INTERMEDIO", "obligatoria": true },
+    { "habilidadId": "…", "nivelRequerido": "BASICO", "obligatoria": false }
+  ]
+}
+```
+
+| Campo | Validación |
+| --- | --- |
+| `titulo` | `@NotBlank @Size(max = 150)` |
+| `descripcion` | `@NotBlank @Size(max = 5000)` |
+| `tipo` | `@NotNull`, `PRACTICA` o `JUNIOR` |
+| `modalidad` | `@NotNull`, `PRESENCIAL`, `HIBRIDA` o `REMOTA` |
+| `ciudad` | `@NotBlank @Size(max = 100)` |
+| `salarioMin`, `salarioMax` | Opcionales. Pesos colombianos sin decimales, `>= 0`. Si vienen los dos, `salarioMin <= salarioMax` (dominio, 400) |
+| `fechaCierre` | `@NotNull`. Hoy o después, en hora de Colombia (dominio, 400) |
+| `habilidades` | `@NotEmpty @Size(max = 15) @Valid`. Sin habilidades repetidas y **al menos una obligatoria** (dominio, 400). Cada `habilidadId` debe existir en el catálogo (400 `"habilidades: la habilidad … no existe"`) |
+| `habilidades[].nivelRequerido` | `@NotNull`, `BASICO`, `INTERMEDIO` o `AVANZADO` |
+| `habilidades[].obligatoria` | `@NotNull` |
+
+Al menos una obligatoria, porque la compatibilidad (`CLAUDE.md`) pesa doble esas habilidades y una vacante
+sin requisitos obligatorios no explica "lo que te falta".
+
+**Salida** (`VacanteDetalle`):
+
+```json
+{
+  "id": "…",
+  "titulo": "Desarrollador Java junior",
+  "descripcion": "…",
+  "tipo": "JUNIOR",
+  "modalidad": "HIBRIDA",
+  "ciudad": "Medellín",
+  "salarioMin": 2800000,
+  "salarioMax": 3500000,
+  "estado": "ABIERTA",
+  "fechaPublicacion": "2026-10-28T15:00:00Z",
+  "fechaCierre": "2026-11-30",
+  "empresa": { "id": "…", "razonSocial": "Software Medellín S.A.S." },
+  "habilidades": [
+    { "habilidadId": "…", "nombre": "Java", "categoria": "LENGUAJE", "nivelRequerido": "INTERMEDIO", "obligatoria": true }
+  ]
+}
+```
+
+Las habilidades salen ordenadas: primero las obligatorias y luego por nombre.
+
+| Endpoint | Rol | Respuesta | Errores |
+| --- | --- | --- | --- |
+| `POST /api/vacantes` | EMPRESA | 201 `VacanteDetalle` | 400 validación; **403** `"Tu empresa debe estar verificada para publicar vacantes"` (regla 3) |
+| `PUT /api/vacantes/{id}` | EMPRESA dueña | 200 `VacanteDetalle` | 400; 403 si es de otra empresa (regla 4); 404 `"La vacante no existe"`; 409 `"No se puede editar una vacante cerrada"` |
+| `PATCH /api/vacantes/{id}/cerrar` | EMPRESA dueña | 200 `VacanteDetalle` con `estado: "CERRADA"` | 403 (regla 4); 404 |
+| `GET /api/empresas/me/vacantes` | EMPRESA | 200 `PaginaDto<VacanteDeEmpresaResumen>` (definido en 3.2) | — |
+| `GET /api/vacantes/{id}` | Autenticado | 200 `VacanteDetalle` | 403 si una EMPRESA pide la vacante de otra (regla 4); 404 |
+
+- **Editar** reemplaza todos los campos, incluida la lista de habilidades. Las postulaciones existentes conservan
+  la compatibilidad que se guardó al postularse (regla 6).
+- **Cerrar** es idempotente (cerrar una cerrada responde 200). Reabrir queda fuera del MVP.
+- **Vacantes vencidas:** una vacante `ABIERTA` con `fechaCierre` pasada no se cierra sola; el listado de candidatos
+  (3.3) ya la excluye y el frontend la muestra como "vencida" comparando `fechaCierre` con la fecha de hoy.
+- **Candidatos y administrador** pueden ver el detalle de cualquier vacante, también las cerradas
+  (un candidato debe poder revisar la vacante de una postulación antigua).
+- El listado para candidatos con compatibilidad (`GET /api/vacantes`, 3.3) es de la semana 4.
+
+### 4.5 Postman y frontend
+
+- **Postman** (skill `endpoint-postman`): carpetas Habilidades, Empresas y Vacantes. Como el administrador no se crea
+  por la API, la colección inicia sesión con el administrador inicial de cada entorno (`ADMIN_EMAIL` y `ADMIN_PASSWORD`
+  del `.env`). Sus credenciales se pasan al ejecutar, **nunca se guardan en el repo**:
+  `npx newman run ... --env-var emailAdmin=... --env-var passwordAdmin=...`.
+  Flujo: registrar empresa → publicar sin verificar (403) → el admin la verifica → publicar (201) → editar → cerrar → editar cerrada (409),
+  y una segunda empresa que intenta editar la vacante ajena (403).
+- **Frontend** (fase 2 de `docs/plan-frontend.md`): `/empresa/perfil`, `/empresa/vacantes`, `/empresa/vacantes/nueva`
+  y `/empresa/vacantes/:id/editar`, primero con API simulada que siga esta sección.
