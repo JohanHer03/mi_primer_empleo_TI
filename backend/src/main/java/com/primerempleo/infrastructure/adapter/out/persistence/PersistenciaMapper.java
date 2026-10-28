@@ -5,6 +5,8 @@ import com.primerempleo.domain.model.Empresa;
 import com.primerempleo.domain.model.Habilidad;
 import com.primerempleo.domain.model.Usuario;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
 
 /**
  * Traduce entre entidades JPA y modelos de dominio (MapStruct genera la implementación).
@@ -24,6 +26,11 @@ public interface PersistenciaMapper {
     EmpresaEntity aEntidad(Empresa empresa);
 
     Empresa aDominio(EmpresaEntity entidad);
+
+    /** Copia los datos editables sobre una entidad ya cargada; el id y el usuario no cambian. */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "usuarioId", ignore = true)
+    void copiar(Empresa empresa, @MappingTarget EmpresaEntity entidad);
 
     HabilidadEntity aEntidad(Habilidad habilidad);
 

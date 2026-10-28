@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-10-27 · Semana 3 en curso: catálogo de habilidades listo; siguen perfil de empresa, verificación y vacantes
+Última actualización: 2026-10-27 · Semana 3 en curso: catálogo de habilidades, perfil y verificación de empresas listos; sigue el CRUD de vacantes
 
 ## Propósito
 
@@ -49,6 +49,9 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-10-27 | Paginación con `SolicitudPagina` y `Pagina<T>` en el dominio y `PaginaDto<T>` en la web; `size` fuera de 1 a 50 responde 400 | El dominio no depende de la `Page` de Spring Data y el error sale con el formato uniforme |
+| 2026-10-27 | Para actualizar, el puerto tiene `actualizar(...)`: el adaptador carga la entidad con `findById` y MapStruct le copia los cambios (`@MappingTarget`) | Evita la clave duplicada de una entidad nueva (`Persistable`), como anotó el revisor |
+| 2026-10-27 | El correo de la empresa sale de una consulta JPQL que une `empresas` y `usuarios` por `usuario_id` (sin relación JPA) | Las entidades siguen sin relaciones; el listado con y sin filtro son dos consultas porque un parámetro null en `is null` falla en PostgreSQL |
 | 2026-10-27 | El catálogo de habilidades se lista completo, sin paginar (excepción a `CLAUDE.md`) y ordenado por categoría (orden del enum) y nombre en español | Alimenta los selectores de los formularios y tiene decenas de elementos (contrato 4.1) |
 | 2026-10-27 | La colección de Postman no crea habilidades (no hay caso 201) | Cada ejecución agregaría una habilidad de prueba al catálogo real que ven los usuarios |
 | 2026-10-27 | Contrato de la API acordado: secciones 1 a 3 de `docs/contrato-api.md`; el registro va por rol (`/api/auth/registro/candidato` y `/empresa`) | Lo implementado en la semana 2 ya lo sigue; cambios posteriores, con un PR que toque el contrato |
@@ -102,7 +105,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Proyecto React (fase 0 de `docs/plan-frontend.md`) | Hecho | Vite + React 19 + TS, cliente único de la API, sesión con JWT, rutas y layouts por rol, 14 pantallas marcador, login simulado. Probado con `docker compose` junto al backend |
 | Landing pública en `/` | Hecho | Problema con cifras del DANE, diferencial, cómo funciona, empresas y ODS 8, según `docs/fundamentacion.md`. Con sesión, `/` sigue llevando al inicio del rol |
 | Frontend fase 1: registro y login (HU-01, HU-06) | Hecho | Formularios de candidato y empresa según `docs/contrato-api.md`, conectados al backend real; probado en producción (login de ADMIN → `/admin/habilidades`) |
-| Catálogo de habilidades (HU-10, contrato 4.1) | Hecho en la rama `feat/backend-habilidades` | `GET /api/habilidades` (autenticado, filtro por categoría) y `POST /api/habilidades` (ADMIN, 409 si se repite). Probado contra Supabase y con las carpetas Administrador y Habilidades de Postman |
+| Catálogo de habilidades (HU-10, contrato 4.1) | Hecho | PR #17: `GET /api/habilidades` (autenticado, filtro por categoría) y `POST /api/habilidades` (ADMIN, 409 si se repite) |
+| Perfil y verificación de empresas (HU-06, HU-10; contrato 4.2 y 4.3) | Hecho en la rama `feat/backend-empresas` | `GET` y `PUT /api/empresas/me` (EMPRESA), `GET /api/empresas?verificada=` paginado y `PATCH /api/empresas/{id}/verificar` (ADMIN). Primera paginación (`PaginaDto`). Probado contra Supabase y con la carpeta Empresas de Postman |
 | Frontend fases 2 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API), V3 (ajustes de revisión) y V4 (nombre de habilidad único sin distinguir mayúsculas y catálogo inicial de 35 habilidades) aplicadas en Supabase (PostgreSQL 17). Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |

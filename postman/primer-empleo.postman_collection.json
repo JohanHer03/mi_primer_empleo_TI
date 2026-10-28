@@ -231,7 +231,8 @@
                 "exec": [
                   "pm.test(\"Responde 201 Created\", () => pm.response.to.have.status(201));",
                   "pm.test(\"Devuelve un token\", () => pm.expect(pm.response.json().token).to.be.a(\"string\"));",
-                  "pm.collectionVariables.set(\"token\", pm.response.json().token);"
+                  "pm.collectionVariables.set(\"token\", pm.response.json().token);",
+                  "pm.collectionVariables.set(\"tokenEmpresa\", pm.response.json().token);"
                 ]
               }
             }
@@ -776,6 +777,495 @@
       ]
     },
     {
+      "name": "Empresas",
+      "description": "Perfil de empresa (4.2) y verificación por el administrador (4.3). Usa la empresa que se registró en Autenticación.",
+      "item": [
+        {
+          "name": "Ver mi perfil de empresa (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const perfil = pm.response.json();",
+                  "pm.collectionVariables.set(\"empresaId\", perfil.id);",
+                  "pm.test(\"Recién registrada, sin verificar\", () => pm.expect(perfil.verificada).to.eql(false));",
+                  "pm.test(\"El NIT llega solo con dígitos\", () => pm.expect(perfil.nit).to.match(/^[0-9]+$/));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar mi perfil de empresa (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razonSocial\": \"Software Medellín S.A.S. BIC\",\n  \"sector\": \"Fintech\",\n  \"ciudad\": \"Envigado\",\n  \"sitioWeb\": \"https://softwaremedellin.co\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Guarda los cambios\", () => pm.expect(pm.response.json().ciudad).to.eql(\"Envigado\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar perfil sin razón social (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"razonSocial\": \"\",\n  \"sector\": null,\n  \"ciudad\": null,\n  \"sitioWeb\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: razonSocial: es obligatoria\", () => pm.expect(pm.response.json().mensaje).to.eql(\"razonSocial: es obligatoria\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver perfil de empresa como candidato (403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "me"
+              ]
+            },
+            "description": "Usa el token del candidato que guardó Autenticación."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar empresas sin verificar (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas?verificada=false&page=0&size=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas"
+              ],
+              "query": [
+                {
+                  "key": "verificada",
+                  "value": "false"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "50"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const pagina = pm.response.json();",
+                  "pm.test(\"Formato PaginaDto\", () => pm.expect(pagina).to.have.all.keys(\"contenido\", \"pagina\", \"tamano\", \"totalElementos\", \"totalPaginas\"));",
+                  "pm.test(\"Solo empresas sin verificar\", () => pagina.contenido.forEach(e => pm.expect(e.verificada).to.eql(false)));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar empresas con size 51 (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas?size=51",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas"
+              ],
+              "query": [
+                {
+                  "key": "size",
+                  "value": "51"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: size: debe estar entre 1 y 50\", () => pm.expect(pm.response.json().mensaje).to.eql(\"size: debe estar entre 1 y 50\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar empresas como empresa (403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verificar empresa (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/{{empresaId}}/verificar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "{{empresaId}}",
+                "verificar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Queda verificada\", () => pm.expect(pm.response.json().verificada).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verificar empresa otra vez (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/{{empresaId}}/verificar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "{{empresaId}}",
+                "verificar"
+              ]
+            },
+            "description": "Idempotente: verificar una empresa ya verificada no cambia nada.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sigue verificada\", () => pm.expect(pm.response.json().verificada).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verificar empresa inexistente (404)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/00000000-0000-0000-0000-000000000000/verificar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "00000000-0000-0000-0000-000000000000",
+                "verificar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Mensaje: La empresa no existe\", () => pm.expect(pm.response.json().mensaje).to.eql(\"La empresa no existe\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verificar empresa como empresa (403)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/{{empresaId}}/verificar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "{{empresaId}}",
+                "verificar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Seguridad",
       "item": [
         {
@@ -844,6 +1334,14 @@
     },
     {
       "key": "habilidadJavaId",
+      "value": ""
+    },
+    {
+      "key": "tokenEmpresa",
+      "value": ""
+    },
+    {
+      "key": "empresaId",
       "value": ""
     }
   ]
