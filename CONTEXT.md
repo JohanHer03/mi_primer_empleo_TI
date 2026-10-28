@@ -95,7 +95,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Fundamentación | Hecho | `docs/fundamentacion.md` |
 | CLAUDE.md y CONTEXT.md | Hecho | |
 | Archivos de despliegue | Hecho | `vercel.json`, `Dockerfile.vercel`, `docker-compose.yml` |
-| Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal`, `migracion-flyway` y `pantalla-react`, agente `revisor-arquitectura`. Faltan la skill `endpoint-postman` (la colección ya existe en `/postman`; conviene crear la skill antes de la semana 3) y los agentes `escritor-pruebas` y `revisor-seguridad` (semanas 4 y 5) |
+| Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal`, `migracion-flyway`, `pantalla-react` y `endpoint-postman`, agente `revisor-arquitectura`. Faltan los agentes `escritor-pruebas` y `revisor-seguridad` (semanas 4 y 5) |
 | Proyecto Spring Boot | Hecho | Paquetes hexagonales, errores uniformes, `SecurityConfig` sin estado (sin JWT aún), CORS, Swagger. Imagen `Dockerfile.vercel` probada con `docker compose up --build backend` (responde 401 en JSON) |
 | Proyecto React (fase 0 de `docs/plan-frontend.md`) | Hecho | Vite + React 19 + TS, cliente único de la API, sesión con JWT, rutas y layouts por rol, 14 pantallas marcador, login simulado. Probado con `docker compose` junto al backend |
 | Landing pública en `/` | Hecho | Problema con cifras del DANE, diferencial, cómo funciona, empresas y ODS 8, según `docs/fundamentacion.md`. Con sesión, `/` sigue llevando al inicio del rol |
@@ -112,6 +112,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 - [x] ¿Usar Lombok y MapStruct? → MapStruct sí, Lombok no (2026-10-23).
 - [ ] ¿El tutor exige pruebas de integración además de las unitarias? Si sí, agregar Testcontainers (requiere Docker).
 - [ ] Fecha exacta de entrega y sustentación.
+- [ ] ¿Proteger el dominio de producción? Hoy es público (la protección estándar de Vercel solo cubre las URL de cada deploy). Recomendación: dejarlo público para que el tutor lo abra sin cuenta de Vercel, sin datos personales reales y con contraseña fuerte del ADMIN.
 
 ## Plugins externos
 
@@ -122,8 +123,8 @@ Se instalan desde el directorio de plugins de Anthropic **a medida que se necesi
 | --- | --- | --- | --- |
 | Java Backend Skills | Semana 1 | Spring Boot, Data, Security, Web y pruebas | Instalado |
 | supabase | Semana 1 | PostgreSQL y consultar el esquema (sin su autenticación) | Instalado; su MCP necesita autorizarse con `/mcp` antes de usarlo |
-| code-review | Semana 3 | Revisión de pull requests | Pendiente de instalar |
-| postman | Semana 3 | Colección y pruebas de la API | Pendiente de instalar |
+| code-review | Semana 3 | Revisión de pull requests | Ofrecido para instalar (2026-10-27); confirmar en el panel de plugins |
+| postman | Semana 3 | Colección y pruebas de la API | Ofrecido para instalar (2026-10-27); su MCP necesita una API key de Postman solo si se sincroniza con la nube. La colección del repo se prueba con `npx newman` sin cuenta |
 | frontend-design | Semana 6 | Pulir la interfaz | Pendiente de instalar |
 
 Notas de uso:
