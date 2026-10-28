@@ -36,6 +36,10 @@ app:
   jwt:
     secret: ${JWT_SECRET}
     expiracion-minutos: 120
+  admin:
+    # Cuenta ADMIN que se crea al arrancar si no existe (AdministradorInicial); vacías = no se crea
+    email: ${ADMIN_EMAIL:}
+    password: ${ADMIN_PASSWORD:}
   cors:
     # En Vercel front y back comparten dominio (no hace falta CORS);
     # se mantiene para desarrollo local y Postman
