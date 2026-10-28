@@ -74,6 +74,9 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
         if (detalle.contains("uq_empresas_nit")) {
             return responder(HttpStatus.CONFLICT, RecursoDuplicadoException.nitRepetido().getMessage());
         }
+        if (detalle.contains("uq_habilidades_nombre")) {
+            return responder(HttpStatus.CONFLICT, RecursoDuplicadoException.habilidadRepetida().getMessage());
+        }
         log.warn("Restricción de la base de datos violada: {}", detalle);
         return responder(HttpStatus.CONFLICT, ErrorResponse.mensajePorDefecto(HttpStatus.CONFLICT));
     }

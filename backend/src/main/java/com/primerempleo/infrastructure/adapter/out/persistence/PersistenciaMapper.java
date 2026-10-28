@@ -2,6 +2,7 @@ package com.primerempleo.infrastructure.adapter.out.persistence;
 
 import com.primerempleo.domain.model.Candidato;
 import com.primerempleo.domain.model.Empresa;
+import com.primerempleo.domain.model.Habilidad;
 import com.primerempleo.domain.model.Usuario;
 import org.mapstruct.Mapper;
 
@@ -23,4 +24,8 @@ public interface PersistenciaMapper {
     EmpresaEntity aEntidad(Empresa empresa);
 
     Empresa aDominio(EmpresaEntity entidad);
+
+    HabilidadEntity aEntidad(Habilidad habilidad);
+
+    Habilidad aDominio(HabilidadEntity entidad);
 }

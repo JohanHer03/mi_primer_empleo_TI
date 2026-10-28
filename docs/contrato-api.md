@@ -8,7 +8,7 @@ Se completa antes de cada fase del plan (`docs/plan-frontend.md`). Las rutas gen
 | Convenciones generales | **Acordado** (2026-10-27). `PaginaDto` se implementa con el primer listado (semana 3) |
 | Autenticación (fase 1) | **Acordado** (2026-10-27). Implementado y en producción (PR #11, #12 y #13) |
 | Endpoints que faltan en la fundamentación | **Acordado** (2026-10-27). Sus DTOs completos se detallan antes de cada fase |
-| Fase 2: habilidades, empresas y vacantes (semana 3) | Propuesta (2026-10-27); queda acordada al fusionar su PR |
+| Fase 2: habilidades, empresas y vacantes (semana 3) | **Acordado** (2026-10-27, PR #16). Implementado: 4.1 habilidades |
 
 Cuando el backend apruebe una sección, se cambia su estado a **Acordado** y cualquier cambio posterior se hace con un pull request que toque este archivo.
 

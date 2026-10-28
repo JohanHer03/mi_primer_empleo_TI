@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-10-27 · Semana 2 cerrada: autenticación funcionando de punta a punta en producción
+Última actualización: 2026-10-27 · Semana 3 en curso: catálogo de habilidades listo; siguen perfil de empresa, verificación y vacantes
 
 ## Propósito
 
@@ -49,6 +49,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-10-27 | El catálogo de habilidades se lista completo, sin paginar (excepción a `CLAUDE.md`) y ordenado por categoría (orden del enum) y nombre en español | Alimenta los selectores de los formularios y tiene decenas de elementos (contrato 4.1) |
+| 2026-10-27 | La colección de Postman no crea habilidades (no hay caso 201) | Cada ejecución agregaría una habilidad de prueba al catálogo real que ven los usuarios |
 | 2026-10-27 | Contrato de la API acordado: secciones 1 a 3 de `docs/contrato-api.md`; el registro va por rol (`/api/auth/registro/candidato` y `/empresa`) | Lo implementado en la semana 2 ya lo sigue; cambios posteriores, con un PR que toque el contrato |
 | 2026-10-27 | `server.forward-headers-strategy: framework`: Spring toma el host y el protocolo de `X-Forwarded-Host` y `X-Forwarded-Proto` | Detrás del proxy de Vercel, Spring veía un host interno y rechazaba con 403 "Invalid CORS request" el `Origin` del propio dominio (el login desde el navegador fallaba aunque curl funcionaba) |
 | 2026-10-27 | Contraseña nueva: mínimo 8 caracteres y máximo 72 **bytes** (`PoliticaContrasena`, en el dominio) | BCrypt 6.5 lanza excepción con más de 72 bytes: 40 letras con tilde pasaban el `@Size` del DTO y daban 500 |
@@ -100,8 +102,9 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Proyecto React (fase 0 de `docs/plan-frontend.md`) | Hecho | Vite + React 19 + TS, cliente único de la API, sesión con JWT, rutas y layouts por rol, 14 pantallas marcador, login simulado. Probado con `docker compose` junto al backend |
 | Landing pública en `/` | Hecho | Problema con cifras del DANE, diferencial, cómo funciona, empresas y ODS 8, según `docs/fundamentacion.md`. Con sesión, `/` sigue llevando al inicio del rol |
 | Frontend fase 1: registro y login (HU-01, HU-06) | Hecho | Formularios de candidato y empresa según `docs/contrato-api.md`, conectados al backend real; probado en producción (login de ADMIN → `/admin/habilidades`) |
+| Catálogo de habilidades (HU-10, contrato 4.1) | Hecho en la rama `feat/backend-habilidades` | `GET /api/habilidades` (autenticado, filtro por categoría) y `POST /api/habilidades` (ADMIN, 409 si se repite). Probado contra Supabase y con las carpetas Administrador y Habilidades de Postman |
 | Frontend fases 2 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
-| Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API) y V3 (ajustes de revisión) aplicadas en Supabase (PostgreSQL 17); `flyway:info` las muestra en `Success`. Las entidades JPA se crean con cada funcionalidad |
+| Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API), V3 (ajustes de revisión) y V4 (nombre de habilidad único sin distinguir mayúsculas y catálogo inicial de 35 habilidades) aplicadas en Supabase (PostgreSQL 17). Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
 | Autenticación en el backend (HU-01, HU-06) | Hecho | PR #11 (JWT, filtro y BCrypt), #12 (registro, login y administrador inicial) y #13 (CORS detrás del proxy de Vercel); 80 pruebas en verde. Probado en producción: el administrador se crea desde `ADMIN_EMAIL`/`ADMIN_PASSWORD` y el login lleva a su panel. Colección de Postman en `/postman` |
 
