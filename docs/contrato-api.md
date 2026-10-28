@@ -5,9 +5,9 @@ Se completa antes de cada fase del plan (`docs/plan-frontend.md`). Las rutas gen
 
 | Sección | Estado |
 | --- | --- |
-| Convenciones generales | Propuesta, pendiente de aprobación del backend |
-| Autenticación (fase 1) | Propuesta, pendiente de aprobación del backend |
-| Endpoints que faltan en la fundamentación | Propuesta, pendiente de aprobación del backend |
+| Convenciones generales | **Acordado** (2026-10-27). `PaginaDto` se implementa con el primer listado (semana 3) |
+| Autenticación (fase 1) | **Acordado** (2026-10-27). Implementado y en producción (PR #11, #12 y #13) |
+| Endpoints que faltan en la fundamentación | **Acordado** (2026-10-27). Sus DTOs completos se detallan antes de cada fase |
 
 Cuando el backend apruebe una sección, se cambia su estado a **Acordado** y cualquier cambio posterior se hace con un pull request que toque este archivo.
 

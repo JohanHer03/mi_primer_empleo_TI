@@ -49,6 +49,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-10-27 | Contrato de la API acordado: secciones 1 a 3 de `docs/contrato-api.md`; el registro va por rol (`/api/auth/registro/candidato` y `/empresa`) | Lo implementado en la semana 2 ya lo sigue; cambios posteriores, con un PR que toque el contrato |
 | 2026-10-27 | `server.forward-headers-strategy: framework`: Spring toma el host y el protocolo de `X-Forwarded-Host` y `X-Forwarded-Proto` | Detrás del proxy de Vercel, Spring veía un host interno y rechazaba con 403 "Invalid CORS request" el `Origin` del propio dominio (el login desde el navegador fallaba aunque curl funcionaba) |
 | 2026-10-27 | Contraseña nueva: mínimo 8 caracteres y máximo 72 **bytes** (`PoliticaContrasena`, en el dominio) | BCrypt 6.5 lanza excepción con más de 72 bytes: 40 letras con tilde pasaban el `@Size` del DTO y daban 500 |
 | 2026-10-27 | Los puertos de salida tienen `crear(...)`, no `guardar(...)`; para editar habrá que cargar la entidad con `findById` | Una entidad que sale del mapper se marca como nueva (`Persistable`) y al actualizar daría clave duplicada |
@@ -107,7 +108,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 ## Preguntas abiertas
 
 - [x] Librería de estado y peticiones en React → TanStack Query (2026-10-23).
-- [ ] Aprobar la propuesta de `docs/contrato-api.md` (backend): autenticación de la fase 1, registro separado por rol (`/api/auth/registro/candidato` y `/empresa`, en vez del único `/api/auth/registro` de la fundamentación) y los tres endpoints que faltaban.
+- [x] Aprobar `docs/contrato-api.md`: convenciones, autenticación con registro separado por rol y los tres endpoints que faltaban → Acordado (2026-10-27).
 - [x] ¿Usar Lombok y MapStruct? → MapStruct sí, Lombok no (2026-10-23).
 - [ ] ¿El tutor exige pruebas de integración además de las unitarias? Si sí, agregar Testcontainers (requiere Docker).
 - [ ] Fecha exacta de entrega y sustentación.
