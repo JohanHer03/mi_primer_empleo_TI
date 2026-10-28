@@ -1,0 +1,497 @@
+{
+  "info": {
+    "_postman_id": "474436b4-0d03-5eec-9c73-8fb3dd93a471",
+    "name": "Primer Empleo TI",
+    "description": "API de la plataforma de primer empleo TI (Medellín). Contrato: docs/contrato-api.md.\nEjecutar en orden con el Collection Runner: cada registro crea cuentas nuevas @example.com.\nEl login guarda el token en la variable {{token}}, que heredan las peticiones protegidas.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Autenticación",
+      "item": [
+        {
+          "name": "Registrar candidato (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/registro/candidato",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "registro",
+                "candidato"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailCandidato}}\",\n  \"password\": \"{{passwordPrueba}}\",\n  \"nombres\": \"Laura\",\n  \"apellidos\": \"Gómez Restrepo\",\n  \"estadoAcademico\": \"ESTUDIANTE\",\n  \"semestre\": 9,\n  \"universidad\": \"Universidad de Antioquia\",\n  \"programa\": \"Ingeniería de Sistemas\",\n  \"ciudad\": \"Medellín\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Correo único en cada ejecución para no chocar con cuentas anteriores",
+                  "pm.collectionVariables.set(\"emailCandidato\", `postman.candidato.${Date.now()}@example.com`);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Devuelve un token\", () => pm.expect(pm.response.json().token).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar candidato con correo repetido (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/registro/candidato",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "registro",
+                "candidato"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailCandidato}}\",\n  \"password\": \"{{passwordPrueba}}\",\n  \"nombres\": \"Laura\",\n  \"apellidos\": \"Gómez Restrepo\",\n  \"estadoAcademico\": \"ESTUDIANTE\",\n  \"semestre\": 9,\n  \"universidad\": \"Universidad de Antioquia\",\n  \"programa\": \"Ingeniería de Sistemas\",\n  \"ciudad\": \"Medellín\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Mensaje: Ya existe una cuenta con ese correo\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Ya existe una cuenta con ese correo\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar estudiante sin semestre (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/registro/candidato",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "registro",
+                "candidato"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"postman.sin.semestre@example.com\",\n  \"password\": \"{{passwordPrueba}}\",\n  \"nombres\": \"Laura\",\n  \"apellidos\": \"Gómez Restrepo\",\n  \"estadoAcademico\": \"ESTUDIANTE\",\n  \"semestre\": null,\n  \"universidad\": \"Universidad de Antioquia\",\n  \"programa\": \"Ingeniería de Sistemas\",\n  \"ciudad\": \"Medellín\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: semestre: es obligatorio para estudiantes\", () => pm.expect(pm.response.json().mensaje).to.eql(\"semestre: es obligatorio para estudiantes\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar empresa (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/registro/empresa",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "registro",
+                "empresa"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailEmpresa}}\",\n  \"password\": \"{{passwordPrueba}}\",\n  \"razonSocial\": \"Software Medellín S.A.S.\",\n  \"nit\": \"{{nitEmpresa}}\",\n  \"sector\": \"Desarrollo de software\",\n  \"ciudad\": \"Medellín\",\n  \"sitioWeb\": \"https://softwaremedellin.co\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const sello = Date.now().toString();",
+                  "pm.collectionVariables.set(\"emailEmpresa\", `postman.empresa.${sello}@example.com`);",
+                  "// NIT de 10 dígitos distinto en cada ejecución, escrito con puntos y guion: el backend los quita",
+                  "const nit = \"8\" + sello.slice(-9);",
+                  "pm.collectionVariables.set(\"nitEmpresa\", `${nit.slice(0, 3)}.${nit.slice(3, 6)}.${nit.slice(6, 9)}-${nit.slice(9)}`);",
+                  "pm.collectionVariables.set(\"nitEmpresaDigitos\", nit);"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Devuelve un token\", () => pm.expect(pm.response.json().token).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"token\", pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar empresa con NIT repetido (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/registro/empresa",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "registro",
+                "empresa"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"postman.otra.empresa.{{$timestamp}}@example.com\",\n  \"password\": \"{{passwordPrueba}}\",\n  \"razonSocial\": \"Software Medellín S.A.S.\",\n  \"nit\": \"{{nitEmpresaDigitos}}\",\n  \"sector\": \"Desarrollo de software\",\n  \"ciudad\": \"Medellín\",\n  \"sitioWeb\": \"https://softwaremedellin.co\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Mensaje: Ya existe una empresa registrada con ese NIT\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Ya existe una empresa registrada con ese NIT\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Iniciar sesión (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailCandidato}}\",\n  \"password\": \"{{passwordPrueba}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Devuelve un token\", () => pm.expect(pm.response.json().token).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"token\", pm.response.json().token);",
+                  "const claims = JSON.parse(atob(pm.response.json().token.split(\".\")[1].replace(/-/g, \"+\").replace(/_/g, \"/\")));",
+                  "pm.test(\"El token trae el rol CANDIDATO\", () => pm.expect(claims.rol).to.eql(\"CANDIDATO\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Iniciar sesión con contraseña errónea (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailCandidato}}\",\n  \"password\": \"otraClave123\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401 Unauthorized\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Mensaje: Correo o contraseña incorrectos\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Correo o contraseña incorrectos\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Iniciar sesión sin contraseña (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailCandidato}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Seguridad",
+      "item": [
+        {
+          "name": "Ruta protegida sin token (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401 Unauthorized\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Mensaje: Se requiere autenticación\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Se requiere autenticación\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "passwordPrueba",
+      "value": "Medellin2026"
+    },
+    {
+      "key": "emailCandidato",
+      "value": ""
+    },
+    {
+      "key": "emailEmpresa",
+      "value": ""
+    },
+    {
+      "key": "nitEmpresa",
+      "value": ""
+    },
+    {
+      "key": "nitEmpresaDigitos",
+      "value": ""
+    }
+  ]
+}

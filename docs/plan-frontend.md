@@ -20,7 +20,7 @@ de `docs/fundamentacion.md`. Cada fase termina con `npm run lint` y `npm run bui
 | Fase | Semana | Alcance | Historias | Estado |
 | --- | --- | --- | --- | --- |
 | 0. Base | 1 | Proyecto, cliente de la API, sesión, rutas y layouts por rol, pantallas marcador, login simulado, skill `pantalla-react` | — | Hecho |
-| 1. Autenticación | 2 | Registro de candidato y de empresa, login real, redirección por rol | HU-01, HU-06 | Hecho con API simulada; falta probar contra el backend real |
+| 1. Autenticación | 2 | Registro de candidato y de empresa, login real, redirección por rol | HU-01, HU-06 | Hecho; probado contra el backend local (registro, login y 401). Falta probarlo desplegado en Vercel |
 | 2. Empresa | 3 | Perfil de empresa (aviso si no está verificada), mis vacantes, publicar, editar y cerrar | HU-06, HU-07 | Pendiente |
 | 3. Candidato | 4 | Perfil y habilidades con nivel, búsqueda con filtros y paginación, postularse, mis postulaciones | HU-02, HU-03, HU-05 | Pendiente |
 | 4. Compatibilidad | 5 | Detalle de vacante con porcentaje y "lo que te falta"; despliegue en Vercel | HU-04 | Pendiente |

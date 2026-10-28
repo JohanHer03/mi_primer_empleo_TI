@@ -1,9 +1,14 @@
 package com.primerempleo.infrastructure.config;
 
+import com.primerempleo.domain.exception.CredencialesInvalidasException;
+import com.primerempleo.domain.exception.CuentaDesactivadaException;
+import com.primerempleo.domain.exception.DatosInvalidosException;
+import com.primerempleo.domain.exception.RecursoDuplicadoException;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -24,7 +29,7 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
  * Hereda de ResponseEntityExceptionHandler para que todas las excepciones estándar de Spring MVC
  * (415, 405, 406, parámetros faltantes, ResponseStatusException, ...) conserven su código HTTP;
  * aquí solo se cambia el cuerpo y algunos mensajes.
- * Las excepciones de negocio de domain.exception se agregan aquí a medida que se creen.
+ * Las excepciones de negocio de domain.exception se traducen aquí a su código HTTP.
  */
 @RestControllerAdvice
 public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
@@ -34,6 +39,43 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<Object> manejarAccesoDenegado(AccessDeniedException ex) {
         return responder(HttpStatus.FORBIDDEN, ErrorResponse.mensajePorDefecto(HttpStatus.FORBIDDEN));
+    }
+
+    @ExceptionHandler(DatosInvalidosException.class)
+    public ResponseEntity<Object> manejarDatosInvalidos(DatosInvalidosException ex) {
+        return responder(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ResponseEntity<Object> manejarCredencialesInvalidas(CredencialesInvalidasException ex) {
+        return responder(HttpStatus.UNAUTHORIZED, ex.getMessage());
+    }
+
+    @ExceptionHandler(CuentaDesactivadaException.class)
+    public ResponseEntity<Object> manejarCuentaDesactivada(CuentaDesactivadaException ex) {
+        return responder(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
+    @ExceptionHandler(RecursoDuplicadoException.class)
+    public ResponseEntity<Object> manejarRecursoDuplicado(RecursoDuplicadoException ex) {
+        return responder(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    /**
+     * Respaldo de las validaciones del caso de uso: si dos peticiones registran el mismo correo o NIT
+     * a la vez, ambas pasan la comprobación y la base rechaza la segunda con su restricción.
+     */
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<Object> manejarIntegridad(DataIntegrityViolationException ex) {
+        String detalle = String.valueOf(ex.getMostSpecificCause().getMessage());
+        if (detalle.contains("uq_usuarios_email")) {
+            return responder(HttpStatus.CONFLICT, "Ya existe una cuenta con ese correo");
+        }
+        if (detalle.contains("uq_empresas_nit")) {
+            return responder(HttpStatus.CONFLICT, "Ya existe una empresa registrada con ese NIT");
+        }
+        log.warn("Restricción de la base de datos violada: {}", detalle);
+        return responder(HttpStatus.CONFLICT, ErrorResponse.mensajePorDefecto(HttpStatus.CONFLICT));
     }
 
     @ExceptionHandler(Exception.class)

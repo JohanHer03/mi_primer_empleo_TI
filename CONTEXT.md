@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-10-27 · Semana 2 en curso: base de JWT lista; sigue registro y login
+Última actualización: 2026-10-27 · Semana 2 en curso: registro y login listos en local; falta probarlos desplegados
 
 ## Propósito
 
@@ -49,6 +49,11 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-10-27 | Los UUID los genera el dominio (`Usuario.nuevo`, ...); las entidades heredan de `EntidadConIdAsignado` (`Persistable`) | El caso de uso arma usuario y perfil completos antes de guardar, y Spring Data hace un solo INSERT sin el SELECT previo |
+| 2026-10-27 | El correo se guarda en minúsculas y se busca con `lower(email) = lower(:email)` en `@Query` | Usa la misma expresión del índice único de V3 (`findByEmailIgnoreCase` generaría `upper()` y no usaría el índice) |
+| 2026-10-27 | Registro: primero reglas del dominio (400), luego duplicados (409); un `DataIntegrityViolationException` con `uq_usuarios_email` o `uq_empresas_nit` también responde 409 | Respuestas coherentes, incluso si dos registros iguales llegan a la vez |
+| 2026-10-27 | Login: correo inexistente y contraseña errónea dan el mismo 401, y con correo inexistente igual se cifra la contraseña; el 403 de cuenta desactivada solo sale con la contraseña correcta | No revelar qué correos están registrados, ni por el mensaje ni por el tiempo de respuesta |
+| 2026-10-27 | Colección de Postman en `/postman` con entornos `local` y `produccion`; cada ejecución crea cuentas nuevas `@example.com` | Se puede correr completa con el Collection Runner o `npx newman run` sin limpiar la base |
 | 2026-10-27 | JWT con jjwt 0.13.0 (`jjwt-impl` y `jjwt-jackson` solo en ejecución), firmado con HS256 y `JWT_SECRET` de al menos 32 bytes | Librería más documentada; encaja con `JwtService` y `JwtAuthFilter` de `CLAUDE.md`. El servicio falla al crearse si el secreto es corto |
 | 2026-10-27 | `JwtAuthFilter` se crea dentro de `SecurityConfig` (no es `@Component`) y deja como principal un `UsuarioAutenticado` (id, email, rol) con la autoridad `ROLE_<rol>` | Evita que Spring Boot lo registre dos veces; los controladores leen el usuario con `@AuthenticationPrincipal` y el rol se exige con `@PreAuthorize("hasRole('...')")` |
 | 2026-10-27 | El administrador inicial lo crea un `ApplicationRunner` desde `ADMIN_EMAIL` y `ADMIN_PASSWORD` si no existe | El hash se calcula al arrancar: ningún secreto queda en las migraciones del repo público |
@@ -86,7 +91,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Fundamentación | Hecho | `docs/fundamentacion.md` |
 | CLAUDE.md y CONTEXT.md | Hecho | |
 | Archivos de despliegue | Hecho | `vercel.json`, `Dockerfile.vercel`, `docker-compose.yml` |
-| Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal`, `migracion-flyway` y `pantalla-react`, agente `revisor-arquitectura`. Faltan la skill `endpoint-postman` (conviene crearla en la semana 2) y los agentes `escritor-pruebas` y `revisor-seguridad` (semanas 4 y 5) |
+| Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal`, `migracion-flyway` y `pantalla-react`, agente `revisor-arquitectura`. Faltan la skill `endpoint-postman` (la colección ya existe en `/postman`; conviene crear la skill antes de la semana 3) y los agentes `escritor-pruebas` y `revisor-seguridad` (semanas 4 y 5) |
 | Proyecto Spring Boot | Hecho | Paquetes hexagonales, errores uniformes, `SecurityConfig` sin estado (sin JWT aún), CORS, Swagger. Imagen `Dockerfile.vercel` probada con `docker compose up --build backend` (responde 401 en JSON) |
 | Proyecto React (fase 0 de `docs/plan-frontend.md`) | Hecho | Vite + React 19 + TS, cliente único de la API, sesión con JWT, rutas y layouts por rol, 14 pantallas marcador, login simulado. Probado con `docker compose` junto al backend |
 | Landing pública en `/` | Hecho | Problema con cifras del DANE, diferencial, cómo funciona, empresas y ODS 8, según `docs/fundamentacion.md`. Con sesión, `/` sigue llevando al inicio del rol |
@@ -94,7 +99,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Frontend fases 2 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API) y V3 (ajustes de revisión) aplicadas en Supabase (PostgreSQL 17); `flyway:info` las muestra en `Success`. Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
-| Autenticación en el backend (HU-01, HU-06) | En curso | Hecho (rama `feat/backend-jwt`): `JwtService`, `JwtAuthFilter`, BCrypt y enum `Rol`, con pruebas. Falta (`feat/backend-autenticacion`): dominio, casos de uso, persistencia y controlador de registro y login de `docs/contrato-api.md`, sección 2, el administrador inicial y Postman. El frontend ya está listo con API simulada |
+| Autenticación en el backend (HU-01, HU-06) | En curso | Base de JWT en el PR #11. Registro de candidato y empresa, login y administrador inicial en la rama `feat/backend-autenticacion` (71 pruebas en verde); probados contra Supabase, con el frontend real (`VITE_USAR_MOCKS=false`) y con la colección de Postman. Falta: fusionar, cargar `ADMIN_EMAIL` y `ADMIN_PASSWORD` en Vercel y probar desplegado |
 
 ## Preguntas abiertas
 
