@@ -1,6 +1,10 @@
 server:
   # Vercel define PORT=80 en la imagen; en local se usa 8080
   port: ${PORT:8080}
+  # En Vercel el contenedor recibe la petición desde un proxy: sin esto Spring ve un host interno,
+  # cree que el Origin del navegador es de otro sitio y responde 403 "Invalid CORS request".
+  # Con "framework" usa X-Forwarded-Host y X-Forwarded-Proto, que Vercel envía siempre.
+  forward-headers-strategy: framework
 
 spring:
   application:
