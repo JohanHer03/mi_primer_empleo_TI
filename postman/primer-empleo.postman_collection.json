@@ -431,6 +431,351 @@
       ]
     },
     {
+      "name": "Administrador",
+      "description": "El ADMIN no se registra por la API: se inicia sesión con el administrador inicial del entorno. Sus credenciales se pasan al ejecutar y nunca se guardan en el repo: npx newman run ... --env-var emailAdmin=... --env-var passwordAdmin=...",
+      "item": [
+        {
+          "name": "Iniciar sesión como administrador (200)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailAdmin}}\",\n  \"password\": \"{{passwordAdmin}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"tokenAdmin\", pm.response.json().token);",
+                  "const claims = JSON.parse(atob(pm.response.json().token.split(\".\")[1].replace(/-/g, \"+\").replace(/_/g, \"/\")));",
+                  "pm.test(\"El token trae el rol ADMIN\", () => pm.expect(claims.rol).to.eql(\"ADMIN\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Habilidades",
+      "description": "Catálogo (docs/contrato-api.md, 4.1). No hay un caso 201 a propósito: cada ejecución agregaría una habilidad de prueba al catálogo real que ven los usuarios.",
+      "item": [
+        {
+          "name": "Listar catálogo (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/habilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habilidades"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const catalogo = pm.response.json();",
+                  "pm.test(\"Trae el catálogo inicial de V4\", () => pm.expect(catalogo.length).to.be.at.least(35));",
+                  "pm.test(\"Empieza por LENGUAJE\", () => pm.expect(catalogo[0].categoria).to.eql(\"LENGUAJE\"));",
+                  "pm.collectionVariables.set(\"habilidadJavaId\", catalogo.find(h => h.nombre === \"Java\").id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar por categoría (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/habilidades?categoria=BASE_DATOS",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habilidades"
+              ],
+              "query": [
+                {
+                  "key": "categoria",
+                  "value": "BASE_DATOS"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Solo BASE_DATOS\", () => pm.response.json().forEach(h => pm.expect(h.categoria).to.eql(\"BASE_DATOS\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar con categoría inexistente (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/habilidades?categoria=OTRA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habilidades"
+              ],
+              "query": [
+                {
+                  "key": "categoria",
+                  "value": "OTRA"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: Valor inválido para el parámetro categoria\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Valor inválido para el parámetro categoria\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar sin token (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/habilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habilidades"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 401 Unauthorized\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear habilidad repetida (409)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/habilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habilidades"
+              ]
+            },
+            "description": "Sin distinguir mayúsculas: JAVA choca con Java del catálogo.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"JAVA\",\n  \"categoria\": \"LENGUAJE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Mensaje: Ya existe una habilidad con ese nombre\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Ya existe una habilidad con ese nombre\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear habilidad sin categoría (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/habilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habilidades"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Rust\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: categoria: es obligatoria\", () => pm.expect(pm.response.json().mensaje).to.eql(\"categoria: es obligatoria\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Crear habilidad como candidato (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/habilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "habilidades"
+              ]
+            },
+            "description": "Usa el token del candidato que guardó Autenticación.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Rust\",\n  \"categoria\": \"LENGUAJE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Mensaje: No tienes permiso para realizar esta acción\", () => pm.expect(pm.response.json().mensaje).to.eql(\"No tienes permiso para realizar esta acción\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Seguridad",
       "item": [
         {
@@ -491,6 +836,14 @@
     },
     {
       "key": "nitEmpresaDigitos",
+      "value": ""
+    },
+    {
+      "key": "tokenAdmin",
+      "value": ""
+    },
+    {
+      "key": "habilidadJavaId",
       "value": ""
     }
   ]

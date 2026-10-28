@@ -18,4 +18,9 @@ public class RecursoDuplicadoException extends RuntimeException {
     public static RecursoDuplicadoException nitRepetido() {
         return new RecursoDuplicadoException("Ya existe una empresa registrada con ese NIT");
     }
+
+    /** Habilidad ya en el catálogo, sin distinguir mayúsculas (docs/contrato-api.md, 4.1). */
+    public static RecursoDuplicadoException habilidadRepetida() {
+        return new RecursoDuplicadoException("Ya existe una habilidad con ese nombre");
+    }
 }
