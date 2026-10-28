@@ -3,12 +3,19 @@ package com.primerempleo.infrastructure.adapter.out.persistence;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.util.UUID;
 
-/** Tabla empresas. fecha_creacion no se mapea: la pone la base con su valor por defecto. */
+/**
+ * Tabla empresas. fecha_creacion solo se lee: la pone la base con su valor por defecto
+ * (en una empresa recién insertada queda null hasta que se vuelve a cargar).
+ */
 @Entity
 @Table(name = "empresas")
 public class EmpresaEntity extends EntidadConIdAsignado {
+
+    @Column(name = "fecha_creacion", insertable = false, updatable = false)
+    private Instant fechaCreacion;
 
     @Column(name = "usuario_id", nullable = false, updatable = false)
     private UUID usuarioId;
@@ -30,6 +37,10 @@ public class EmpresaEntity extends EntidadConIdAsignado {
 
     @Column(name = "verificada", nullable = false)
     private boolean verificada;
+
+    public Instant getFechaCreacion() {
+        return fechaCreacion;
+    }
 
     public UUID getUsuarioId() {
         return usuarioId;

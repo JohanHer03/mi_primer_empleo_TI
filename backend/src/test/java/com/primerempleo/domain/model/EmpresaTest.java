@@ -39,6 +39,27 @@ class EmpresaTest {
     }
 
     @Test
+    void deberiaEditarElPerfilSinCambiarNitNiVerificacion() {
+        Empresa empresa = Empresa.nueva(USUARIO, "Software Medellín S.A.S.", "9001234567", null, null, null).verificar();
+
+        Empresa editada = empresa.conPerfil(" Software Medellín S.A.S. BIC ", "Fintech", "Envigado", "");
+
+        assertThat(editada.id()).isEqualTo(empresa.id());
+        assertThat(editada.nit()).isEqualTo("9001234567");
+        assertThat(editada.verificada()).isTrue();
+        assertThat(editada.razonSocial()).isEqualTo("Software Medellín S.A.S. BIC");
+        assertThat(editada.sitioWeb()).isNull();
+    }
+
+    @Test
+    void deberiaQuedarVerificadaAlVerificarla() {
+        Empresa empresa = Empresa.nueva(USUARIO, "Software Medellín S.A.S.", "9001234567", null, null, null);
+
+        assertThat(empresa.verificada()).isFalse();
+        assertThat(empresa.verificar().verificada()).isTrue();
+    }
+
+    @Test
     void deberiaExigirRazonSocial() {
         assertThatThrownBy(() -> Empresa.nueva(USUARIO, "", "9001234567", null, null, null))
                 .isInstanceOf(DatosInvalidosException.class)

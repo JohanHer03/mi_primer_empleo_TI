@@ -4,6 +4,7 @@ import com.primerempleo.domain.exception.CredencialesInvalidasException;
 import com.primerempleo.domain.exception.CuentaDesactivadaException;
 import com.primerempleo.domain.exception.DatosInvalidosException;
 import com.primerempleo.domain.exception.RecursoDuplicadoException;
+import com.primerempleo.domain.exception.RecursoNoEncontradoException;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +55,11 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
     @ExceptionHandler(CuentaDesactivadaException.class)
     public ResponseEntity<Object> manejarCuentaDesactivada(CuentaDesactivadaException ex) {
         return responder(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
+    @ExceptionHandler(RecursoNoEncontradoException.class)
+    public ResponseEntity<Object> manejarNoEncontrado(RecursoNoEncontradoException ex) {
+        return responder(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
     @ExceptionHandler(RecursoDuplicadoException.class)

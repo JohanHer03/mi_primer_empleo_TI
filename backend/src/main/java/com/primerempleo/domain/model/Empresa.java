@@ -38,6 +38,19 @@ public record Empresa(
         return new Empresa(UUID.randomUUID(), usuarioId, razonSocial, nit, sector, ciudad, sitioWeb, false);
     }
 
+    /**
+     * Perfil editado por la empresa (docs/contrato-api.md, 4.2). El NIT no cambia: identifica a la empresa
+     * que verificó el administrador.
+     */
+    public Empresa conPerfil(String razonSocial, String sector, String ciudad, String sitioWeb) {
+        return new Empresa(id, usuarioId, razonSocial, nit, sector, ciudad, sitioWeb, verificada);
+    }
+
+    /** Aprobada por un administrador: desde ahora puede publicar vacantes (regla 3). */
+    public Empresa verificar() {
+        return new Empresa(id, usuarioId, razonSocial, nit, sector, ciudad, sitioWeb, true);
+    }
+
     /** Quita puntos, guiones y espacios: 900.123.456-7 y 9001234567 son el mismo NIT. */
     public static String normalizarNit(String nit) {
         String digitos = SEPARADORES_NIT.matcher(nit == null ? "" : nit).replaceAll("");
