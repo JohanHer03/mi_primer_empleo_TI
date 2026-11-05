@@ -6,6 +6,7 @@ import type {
   RegistroEmpresaPeticion,
   Rol,
 } from '../tipos'
+import { registrarPerfilEmpresaMock } from './empresas'
 import { esperar } from './utilidades'
 
 // Simulación de /api/auth según docs/contrato-api.md, solo para VITE_USAR_MOCKS=true.
@@ -86,6 +87,7 @@ export async function registrarEmpresaMock(datos: RegistroEmpresaPeticion): Prom
   }
   const cuenta = { ...crearCuenta(datos.email, datos.password, 'EMPRESA'), nit }
   guardarCuentaRegistrada(cuenta)
+  registrarPerfilEmpresaMock(cuenta.id, cuenta.email, { ...datos, nit })
   return { token: crearTokenFalso(cuenta) }
 }
 

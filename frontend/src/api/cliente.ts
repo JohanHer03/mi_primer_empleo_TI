@@ -1,3 +1,4 @@
+import { obtenerTokenActual } from '../auth/sesion'
 import type { ErrorRespuesta } from './tipos'
 
 // Cliente HTTP único: toda llamada a la API pasa por aquí (CLAUDE.md).
@@ -20,10 +21,12 @@ export class ErrorApi extends Error {
 type ObtenerToken = () => string | null
 type AlNoAutorizado = () => void
 
-let obtenerToken: ObtenerToken = () => null
+// El token se lee de la sesión desde el principio: al recargar una página protegida, sus consultas
+// salen antes que los efectos de AuthProvider (React ejecuta primero los efectos de los hijos).
+let obtenerToken: ObtenerToken = obtenerTokenActual
 let alNoAutorizado: AlNoAutorizado = () => {}
 
-/** Lo registra AuthProvider para que el cliente agregue el token y cierre la sesión ante un 401. */
+/** Lo registra AuthProvider para que el cliente cierre la sesión ante un 401. */
 export function configurarSesionCliente(token: ObtenerToken, noAutorizado: AlNoAutorizado) {
   obtenerToken = token
   alNoAutorizado = noAutorizado

@@ -32,6 +32,10 @@ Las cuentas creadas en `/registro` se guardan en `localStorage` de ese navegador
 contraseña incluida en texto plano: en modo simulado usa solo datos de prueba.
 El NIT `9001234567` ya pertenece a la empresa de demostración, sirve para probar el error de NIT repetido.
 
+La empresa de demostración ya está verificada y trae tres vacantes (abierta, vencida y cerrada). Las empresas
+registradas en `/registro` quedan sin verificar: sirven para ver el aviso y el bloqueo de publicar (regla 3).
+Perfiles y vacantes simuladas se guardan en `localStorage` (`primer-empleo.mock.empresas` y `primer-empleo.mock.vacantes`).
+
 Para simular una red lenta o el arranque en frío del backend (y ver los estados de carga y el aviso
 "Estamos despertando el servidor"), en la consola del navegador:
 
