@@ -1,16 +1,22 @@
 package com.primerempleo.infrastructure.adapter.out.persistence;
 
 import com.primerempleo.domain.model.EstadoAcademico;
+import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
  * Tabla candidatos. fecha_creacion no se mapea: la pone la base con su valor por defecto.
  * semestre es SMALLINT, por eso Short (con Integer, ddl-auto=validate rechaza el tipo).
+ * Sus habilidades (candidato_habilidades) son una colección de valores: se guardan y reemplazan junto con el candidato.
  */
 @Entity
 @Table(name = "candidatos")
@@ -46,6 +52,10 @@ public class CandidatoEntity extends EntidadConIdAsignado {
 
     @Column(name = "resumen", columnDefinition = "text")
     private String resumen;
+
+    @ElementCollection
+    @CollectionTable(name = "candidato_habilidades", joinColumns = @JoinColumn(name = "candidato_id"))
+    private List<CandidatoHabilidadEmbeddable> habilidades = new ArrayList<>();
 
     public UUID getUsuarioId() {
         return usuarioId;
@@ -125,5 +135,13 @@ public class CandidatoEntity extends EntidadConIdAsignado {
 
     public void setResumen(String resumen) {
         this.resumen = resumen;
+    }
+
+    public List<CandidatoHabilidadEmbeddable> getHabilidades() {
+        return habilidades;
+    }
+
+    public void setHabilidades(List<CandidatoHabilidadEmbeddable> habilidades) {
+        this.habilidades = habilidades;
     }
 }

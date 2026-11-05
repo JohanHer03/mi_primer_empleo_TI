@@ -25,6 +25,11 @@ public interface PersistenciaMapper {
 
     Candidato aDominio(CandidatoEntity entidad);
 
+    /** Copia los datos editables y reemplaza la lista de habilidades; el id y el usuario no cambian. */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "usuarioId", ignore = true)
+    void copiar(Candidato candidato, @MappingTarget CandidatoEntity entidad);
+
     EmpresaEntity aEntidad(Empresa empresa);
 
     Empresa aDominio(EmpresaEntity entidad);
