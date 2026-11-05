@@ -7,6 +7,8 @@ import com.primerempleo.domain.exception.DatosInvalidosException;
 import com.primerempleo.domain.exception.OperacionNoPermitidaException;
 import com.primerempleo.domain.exception.RecursoDuplicadoException;
 import com.primerempleo.domain.exception.RecursoNoEncontradoException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +20,15 @@ import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.validation.method.ParameterErrors;
+import org.springframework.validation.method.ParameterValidationResult;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
@@ -113,6 +118,29 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
                 .map(error -> error.getField() + ": " + error.getDefaultMessage())
                 .collect(Collectors.joining("; "));
         return handleExceptionInternal(ex, mensaje, headers, status, request);
+    }
+
+    /**
+     * Validación de parámetros sueltos, como el arreglo de PUT /api/candidatos/me/habilidades:
+     * el mensaje sigue el formato "campo: mensaje", con el índice del elemento ("habilidades[1].nivel: ...").
+     */
+    @Override
+    protected ResponseEntity<Object> handleHandlerMethodValidationException(
+            HandlerMethodValidationException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        List<String> errores = new ArrayList<>();
+        for (ParameterValidationResult resultado : ex.getParameterValidationResults()) {
+            String parametro = resultado.getMethodParameter().getParameterName();
+            String campo = resultado.getContainerIndex() == null
+                    ? parametro
+                    : parametro + "[" + resultado.getContainerIndex() + "]";
+            if (resultado instanceof ParameterErrors conCampos) {
+                conCampos.getFieldErrors().forEach(error ->
+                        errores.add(campo + "." + error.getField() + ": " + error.getDefaultMessage()));
+            } else {
+                resultado.getResolvableErrors().forEach(error -> errores.add(campo + ": " + error.getDefaultMessage()));
+            }
+        }
+        return handleExceptionInternal(ex, String.join("; ", errores), headers, status, request);
     }
 
     @Override

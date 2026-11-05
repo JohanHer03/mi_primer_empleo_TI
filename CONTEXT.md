@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-11-04 · Semana 3: backend y frontend de empresa completos (perfil, mis vacantes, publicar, editar y cerrar)
+Última actualización: 2026-11-04 · Semana 4 en curso: contrato acordado y perfil y habilidades del candidato listos; siguen compatibilidad, búsqueda y postulaciones
 
 ## Propósito
 
@@ -49,6 +49,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-11-04 | Las habilidades del candidato son parte del modelo `Candidato` (lista validada en el dominio) y un `@ElementCollection` sobre `candidato_habilidades` | Igual que las de la vacante; `CalculadoraCompatibilidad` las recibirá junto con el candidato |
+| 2026-11-04 | `ManejadorGlobalErrores` formatea también la validación de parámetros (`HandlerMethodValidationException`) como `"campo[i].subcampo: mensaje"` | El cuerpo de `PUT /api/candidatos/me/habilidades` es un arreglo: Spring lo valida con su validación de métodos, no con `MethodArgumentNotValidException` |
 | 2026-11-04 | El cliente HTTP lee el token de `obtenerTokenActual()` desde el inicio; `AuthProvider` solo registra el cierre de sesión ante un 401 | Al recargar una página protegida, sus consultas salían sin token (401): React ejecuta los efectos de los hijos antes que el de `AuthProvider` |
 | 2026-11-04 | Filtro y página de "Mis vacantes" en la URL (`?estado=&pagina=`); una vacante abierta con la fecha de cierre pasada se muestra "Vencida" | Se conservan al recargar o volver del formulario; el contrato 4.4 deja al frontend marcar las vencidas |
 | 2026-11-04 | Las habilidades de la vacante son un `@ElementCollection` de `VacanteEntity` sobre `vacante_habilidades` (sin entidad propia) | Se guardan, cargan y reemplazan con la vacante: editar borra y vuelve a insertar la lista, como pide el contrato 4.4 |
@@ -113,9 +115,10 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Frontend fase 1: registro y login (HU-01, HU-06) | Hecho | Formularios de candidato y empresa según `docs/contrato-api.md`, conectados al backend real; probado en producción (login de ADMIN → `/admin/habilidades`) |
 | Catálogo de habilidades (HU-10, contrato 4.1) | Hecho | PR #17: `GET /api/habilidades` (autenticado, filtro por categoría) y `POST /api/habilidades` (ADMIN, 409 si se repite) |
 | Perfil y verificación de empresas (HU-06, HU-10; contrato 4.2 y 4.3) | Hecho | PR #18: `GET` y `PUT /api/empresas/me` (EMPRESA), `GET /api/empresas?verificada=` paginado y `PATCH /api/empresas/{id}/verificar` (ADMIN). Primera paginación (`PaginaDto`). Probado contra Supabase y con la carpeta Empresas de Postman |
-| CRUD de vacantes (HU-07; contrato 3.2 y 4.4) | Hecho en la rama `feat/backend-vacantes` | `POST`, `PUT` y `PATCH /api/vacantes/{id}/cerrar` (EMPRESA dueña), `GET /api/vacantes/{id}` (autenticado) y `GET /api/empresas/me/vacantes` paginado con `totalPostulaciones`. Reglas 3 y 4 en `VacanteService`. 160 pruebas; probado contra Supabase con la carpeta Vacantes de Postman (44 peticiones, 85 aserciones) |
-| Frontend fase 2: empresa (HU-06, HU-07) | Hecho en la rama `feat/frontend-empresa` | Inicio, perfil (aviso si no está verificada), mis vacantes (filtro, paginación, vencidas, cerrar) y formulario de publicar y editar con habilidades del catálogo. Mocks de empresas, habilidades y vacantes. Probado en modo simulado y contra el backend local |
-| Contrato de la fase 3: candidato y postulaciones (semana 4) | Propuesta en la rama `docs/contrato-semana-4` | Sección 5 de `docs/contrato-api.md`: perfil y habilidades del candidato, `CalculadoraCompatibilidad` adelantada, búsqueda solo para CANDIDATO, postularse y mis postulaciones |
+| CRUD de vacantes (HU-07; contrato 3.2 y 4.4) | Hecho (PR #19) | `POST`, `PUT` y `PATCH /api/vacantes/{id}/cerrar` (EMPRESA dueña), `GET /api/vacantes/{id}` (autenticado) y `GET /api/empresas/me/vacantes` paginado con `totalPostulaciones`. Reglas 3 y 4 en `VacanteService`. 160 pruebas; probado contra Supabase con la carpeta Vacantes de Postman (44 peticiones, 85 aserciones) |
+| Frontend fase 2: empresa (HU-06, HU-07) | Hecho (PR #20) | Inicio, perfil (aviso si no está verificada), mis vacantes (filtro, paginación, vencidas, cerrar) y formulario de publicar y editar con habilidades del catálogo. Mocks de empresas, habilidades y vacantes. Probado en modo simulado y contra el backend local |
+| Contrato de la fase 3: candidato y postulaciones (semana 4) | Acordado (PR #21) | Sección 5 de `docs/contrato-api.md`: perfil y habilidades del candidato, `CalculadoraCompatibilidad` adelantada, búsqueda solo para CANDIDATO, postularse y mis postulaciones |
+| Perfil y habilidades del candidato (HU-02; contrato 5.1 y 5.2) | Hecho en la rama `feat/backend-candidatos` | `GET` y `PUT /api/candidatos/me` y `PUT /api/candidatos/me/habilidades` (reemplaza la lista, 0 a 30). 182 pruebas; probado contra Supabase con la carpeta Candidatos de Postman |
 | Frontend fases 3 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API), V3 (ajustes de revisión) y V4 (nombre de habilidad único sin distinguir mayúsculas y catálogo inicial de 35 habilidades) aplicadas en Supabase (PostgreSQL 17). Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |

@@ -2157,6 +2157,428 @@
       ]
     },
     {
+      "name": "Candidatos",
+      "description": "Perfil y habilidades del candidato (5.1 y 5.2). Usa el candidato que se registró en Autenticación.",
+      "item": [
+        {
+          "name": "Ver mi perfil de candidato (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/candidatos/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "candidatos",
+                "me"
+              ]
+            },
+            "description": "Usa el token del candidato que guardó Autenticación."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const perfil = pm.response.json();",
+                  "pm.test(\"Trae el correo de la cuenta\", () => pm.expect(perfil.email).to.eql(pm.collectionVariables.get(\"emailCandidato\")));",
+                  "pm.test(\"Recién registrado, sin habilidades\", () => pm.expect(perfil.habilidades).to.eql([]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar mi perfil de candidato (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/candidatos/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "candidatos",
+                "me"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Laura\",\n  \"apellidos\": \"Gómez Restrepo\",\n  \"estadoAcademico\": \"ESTUDIANTE\",\n  \"semestre\": 10,\n  \"universidad\": \"Universidad de Antioquia\",\n  \"programa\": \"Ingeniería de Sistemas\",\n  \"ciudad\": \"Medellín\",\n  \"githubUrl\": \"https://github.com/lauragomez\",\n  \"resumen\": \"Me interesa el desarrollo backend con Java y Spring Boot.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Guarda el GitHub\", () => pm.expect(pm.response.json().githubUrl).to.eql(\"https://github.com/lauragomez\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar perfil con GitHub de otro sitio (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/candidatos/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "candidatos",
+                "me"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Laura\",\n  \"apellidos\": \"Gómez Restrepo\",\n  \"estadoAcademico\": \"ESTUDIANTE\",\n  \"semestre\": 10,\n  \"universidad\": \"Universidad de Antioquia\",\n  \"programa\": \"Ingeniería de Sistemas\",\n  \"ciudad\": \"Medellín\",\n  \"githubUrl\": \"https://gitlab.com/laura\",\n  \"resumen\": \"Me interesa el desarrollo backend con Java y Spring Boot.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: githubUrl: debe empezar por https://github.com/\", () => pm.expect(pm.response.json().mensaje).to.eql(\"githubUrl: debe empezar por https://github.com/\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar perfil de estudiante sin semestre (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/candidatos/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "candidatos",
+                "me"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombres\": \"Laura\",\n  \"apellidos\": \"Gómez Restrepo\",\n  \"estadoAcademico\": \"ESTUDIANTE\",\n  \"semestre\": null,\n  \"universidad\": \"Universidad de Antioquia\",\n  \"programa\": \"Ingeniería de Sistemas\",\n  \"ciudad\": \"Medellín\",\n  \"githubUrl\": \"https://github.com/lauragomez\",\n  \"resumen\": \"Me interesa el desarrollo backend con Java y Spring Boot.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: semestre: es obligatorio para estudiantes\", () => pm.expect(pm.response.json().mensaje).to.eql(\"semestre: es obligatorio para estudiantes\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Definir mis habilidades (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/candidatos/me/habilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "candidatos",
+                "me",
+                "habilidades"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"habilidadId\": \"{{habilidadGitId}}\",\n    \"nivel\": \"INTERMEDIO\"\n  },\n  {\n    \"habilidadId\": \"{{habilidadJavaId}}\",\n    \"nivel\": \"BASICO\"\n  }\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const lista = pm.response.json();",
+                  "pm.test(\"Guarda las dos\", () => pm.expect(lista.length).to.eql(2));",
+                  "pm.test(\"En orden de catálogo (lenguajes primero)\", () => pm.expect(lista[0].nombre).to.eql(\"Java\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Definir habilidades repetidas (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/candidatos/me/habilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "candidatos",
+                "me",
+                "habilidades"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"habilidadId\": \"{{habilidadJavaId}}\",\n    \"nivel\": \"BASICO\"\n  },\n  {\n    \"habilidadId\": \"{{habilidadJavaId}}\",\n    \"nivel\": \"AVANZADO\"\n  }\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: habilidades: no se puede repetir una habilidad\", () => pm.expect(pm.response.json().mensaje).to.eql(\"habilidades: no se puede repetir una habilidad\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Definir habilidad sin nivel (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/candidatos/me/habilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "candidatos",
+                "me",
+                "habilidades"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"habilidadId\": \"{{habilidadJavaId}}\",\n    \"nivel\": \"BASICO\"\n  },\n  {\n    \"habilidadId\": \"{{habilidadGitId}}\"\n  }\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: habilidades[1].nivel: es obligatorio\", () => pm.expect(pm.response.json().mensaje).to.eql(\"habilidades[1].nivel: es obligatorio\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Definir habilidad inexistente (400)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/candidatos/me/habilidades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "candidatos",
+                "me",
+                "habilidades"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "[\n  {\n    \"habilidadId\": \"00000000-0000-0000-0000-000000000000\",\n    \"nivel\": \"BASICO\"\n  }\n]",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: habilidades: la habilidad 00000000-0000-0000-0000-000000000000 no existe\", () => pm.expect(pm.response.json().mensaje).to.eql(\"habilidades: la habilidad 00000000-0000-0000-0000-000000000000 no existe\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver mi perfil con las habilidades (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/candidatos/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "candidatos",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Conserva las dos habilidades válidas\", () => pm.expect(pm.response.json().habilidades.length).to.eql(2));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver perfil de candidato como empresa (403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/candidatos/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "candidatos",
+                "me"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Seguridad",
       "item": [
         {
