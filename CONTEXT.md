@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-10-27 · Semana 3 en curso: catálogo de habilidades, perfil y verificación de empresas listos; sigue el CRUD de vacantes
+Última actualización: 2026-11-04 · Semana 3: backend completo (habilidades, empresas y CRUD de vacantes); falta la fase 2 del frontend
 
 ## Propósito
 
@@ -49,6 +49,10 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-11-04 | Las habilidades de la vacante son un `@ElementCollection` de `VacanteEntity` sobre `vacante_habilidades` (sin entidad propia) | Se guardan, cargan y reemplazan con la vacante: editar borra y vuelve a insertar la lista, como pide el contrato 4.4 |
+| 2026-11-04 | Un `Clock` (bean de `RelojConfig`, UTC) se inyecta en los casos de uso; el dominio convierte a `America/Bogota` para las fechas "vigentes" | Las pruebas fijan el día; la fecha de cierre se compara con el día en Colombia, igual que `ck_vacantes_fecha_cierre` |
+| 2026-11-04 | Nuevas excepciones de dominio: `AccesoDenegadoException` (403 con mensaje, reglas 3 y 4) y `OperacionNoPermitidaException` (409, editar una vacante cerrada) | `RecursoDuplicadoException` es solo para duplicados; el 403 de Spring Security no lleva mensaje propio |
+| 2026-11-04 | `totalPostulaciones` sale de una consulta nativa agrupada por página (`contarPostulaciones`) | Las postulaciones aún no tienen entidad JPA (semana 4); con ella puede pasar a JPQL |
 | 2026-10-27 | Paginación con `SolicitudPagina` y `Pagina<T>` en el dominio y `PaginaDto<T>` en la web; `size` fuera de 1 a 50 responde 400 | El dominio no depende de la `Page` de Spring Data y el error sale con el formato uniforme |
 | 2026-10-27 | Para actualizar, el puerto tiene `actualizar(...)`: el adaptador carga la entidad con `findById` y MapStruct le copia los cambios (`@MappingTarget`) | Evita la clave duplicada de una entidad nueva (`Persistable`), como anotó el revisor |
 | 2026-10-27 | El correo de la empresa sale de una consulta JPQL que une `empresas` y `usuarios` por `usuario_id` (sin relación JPA) | Las entidades siguen sin relaciones; el listado con y sin filtro son dos consultas porque un parámetro null en `is null` falla en PostgreSQL |
@@ -106,7 +110,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Landing pública en `/` | Hecho | Problema con cifras del DANE, diferencial, cómo funciona, empresas y ODS 8, según `docs/fundamentacion.md`. Con sesión, `/` sigue llevando al inicio del rol |
 | Frontend fase 1: registro y login (HU-01, HU-06) | Hecho | Formularios de candidato y empresa según `docs/contrato-api.md`, conectados al backend real; probado en producción (login de ADMIN → `/admin/habilidades`) |
 | Catálogo de habilidades (HU-10, contrato 4.1) | Hecho | PR #17: `GET /api/habilidades` (autenticado, filtro por categoría) y `POST /api/habilidades` (ADMIN, 409 si se repite) |
-| Perfil y verificación de empresas (HU-06, HU-10; contrato 4.2 y 4.3) | Hecho en la rama `feat/backend-empresas` | `GET` y `PUT /api/empresas/me` (EMPRESA), `GET /api/empresas?verificada=` paginado y `PATCH /api/empresas/{id}/verificar` (ADMIN). Primera paginación (`PaginaDto`). Probado contra Supabase y con la carpeta Empresas de Postman |
+| Perfil y verificación de empresas (HU-06, HU-10; contrato 4.2 y 4.3) | Hecho | PR #18: `GET` y `PUT /api/empresas/me` (EMPRESA), `GET /api/empresas?verificada=` paginado y `PATCH /api/empresas/{id}/verificar` (ADMIN). Primera paginación (`PaginaDto`). Probado contra Supabase y con la carpeta Empresas de Postman |
+| CRUD de vacantes (HU-07; contrato 3.2 y 4.4) | Hecho en la rama `feat/backend-vacantes` | `POST`, `PUT` y `PATCH /api/vacantes/{id}/cerrar` (EMPRESA dueña), `GET /api/vacantes/{id}` (autenticado) y `GET /api/empresas/me/vacantes` paginado con `totalPostulaciones`. Reglas 3 y 4 en `VacanteService`. 160 pruebas; probado contra Supabase con la carpeta Vacantes de Postman (44 peticiones, 85 aserciones) |
 | Frontend fases 2 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API), V3 (ajustes de revisión) y V4 (nombre de habilidad único sin distinguir mayúsculas y catálogo inicial de 35 habilidades) aplicadas en Supabase (PostgreSQL 17). Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |

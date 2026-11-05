@@ -1,8 +1,10 @@
 package com.primerempleo.infrastructure.config;
 
+import com.primerempleo.domain.exception.AccesoDenegadoException;
 import com.primerempleo.domain.exception.CredencialesInvalidasException;
 import com.primerempleo.domain.exception.CuentaDesactivadaException;
 import com.primerempleo.domain.exception.DatosInvalidosException;
+import com.primerempleo.domain.exception.OperacionNoPermitidaException;
 import com.primerempleo.domain.exception.RecursoDuplicadoException;
 import com.primerempleo.domain.exception.RecursoNoEncontradoException;
 import java.util.stream.Collectors;
@@ -57,6 +59,12 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
         return responder(HttpStatus.FORBIDDEN, ex.getMessage());
     }
 
+    /** Regla de negocio que niega la operación (reglas 3 y 4), con su propio mensaje. */
+    @ExceptionHandler(AccesoDenegadoException.class)
+    public ResponseEntity<Object> manejarAccesoDenegadoPorRegla(AccesoDenegadoException ex) {
+        return responder(HttpStatus.FORBIDDEN, ex.getMessage());
+    }
+
     @ExceptionHandler(RecursoNoEncontradoException.class)
     public ResponseEntity<Object> manejarNoEncontrado(RecursoNoEncontradoException ex) {
         return responder(HttpStatus.NOT_FOUND, ex.getMessage());
@@ -64,6 +72,11 @@ public class ManejadorGlobalErrores extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(RecursoDuplicadoException.class)
     public ResponseEntity<Object> manejarRecursoDuplicado(RecursoDuplicadoException ex) {
+        return responder(HttpStatus.CONFLICT, ex.getMessage());
+    }
+
+    @ExceptionHandler(OperacionNoPermitidaException.class)
+    public ResponseEntity<Object> manejarOperacionNoPermitida(OperacionNoPermitidaException ex) {
         return responder(HttpStatus.CONFLICT, ex.getMessage());
     }
 

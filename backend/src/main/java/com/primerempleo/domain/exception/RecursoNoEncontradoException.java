@@ -12,4 +12,8 @@ public class RecursoNoEncontradoException extends RuntimeException {
     public static RecursoNoEncontradoException empresa() {
         return new RecursoNoEncontradoException("La empresa no existe");
     }
+
+    public static RecursoNoEncontradoException vacante() {
+        return new RecursoNoEncontradoException("La vacante no existe");
+    }
 }
