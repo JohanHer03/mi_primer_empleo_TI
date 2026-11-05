@@ -8,7 +8,8 @@ Se completa antes de cada fase del plan (`docs/plan-frontend.md`). Las rutas gen
 | Convenciones generales | **Acordado** (2026-10-27). `PaginaDto` se implementa con el primer listado (semana 3) |
 | Autenticación (fase 1) | **Acordado** (2026-10-27). Implementado y en producción (PR #11, #12 y #13) |
 | Endpoints que faltan en la fundamentación | **Acordado** (2026-10-27). Sus DTOs completos se detallan antes de cada fase |
-| Fase 2: habilidades, empresas y vacantes (semana 3) | **Acordado** (2026-10-27, PR #16). Implementado completo (backend): 4.1 a 4.4 |
+| Fase 2: habilidades, empresas y vacantes (semana 3) | **Acordado** (2026-10-27, PR #16). Implementado: backend 4.1 a 4.4 y pantallas de empresa |
+| Fase 3: candidato y postulaciones (semana 4) | **Propuesta** (2026-11-04). Precisa 3.3 y adelanta `CalculadoraCompatibilidad` |
 
 Cuando el backend apruebe una sección, se cambia su estado a **Acordado** y cualquier cambio posterior se hace con un pull request que toque este archivo.
 
@@ -435,3 +436,165 @@ Las habilidades salen ordenadas: primero las obligatorias y luego por nombre.
   y una segunda empresa que intenta editar la vacante ajena (403).
 - **Frontend** (fase 2 de `docs/plan-frontend.md`): `/empresa/perfil`, `/empresa/vacantes`, `/empresa/vacantes/nueva`
   y `/empresa/vacantes/:id/editar`, primero con API simulada que siga esta sección.
+
+---
+
+## 5. Fase 3: candidato y postulaciones (semana 4: HU-02, HU-03 y HU-05)
+
+Entregable: un candidato completa su perfil y sus habilidades, busca vacantes con filtros y se postula.
+Para poder guardar la compatibilidad al postularse (regla 6) se **adelanta `CalculadoraCompatibilidad` a esta semana**;
+en la semana 5 quedan el detalle con "lo que te falta" (`GET /api/vacantes/{id}/compatibilidad`, HU-04), más pruebas y su pantalla.
+
+### 5.1 Perfil de candidato (HU-02)
+
+`CandidatoPerfil`:
+
+```json
+{
+  "id": "…",
+  "email": "laura.gomez@udea.edu.co",
+  "nombres": "Laura",
+  "apellidos": "Gómez Restrepo",
+  "estadoAcademico": "ESTUDIANTE",
+  "semestre": 9,
+  "universidad": "Universidad de Antioquia",
+  "programa": "Ingeniería de Sistemas",
+  "ciudad": "Medellín",
+  "githubUrl": "https://github.com/lauragomez",
+  "resumen": "Me interesa el desarrollo backend con Java…",
+  "habilidades": [
+    { "habilidadId": "…", "nombre": "Java", "categoria": "LENGUAJE", "nivel": "INTERMEDIO" }
+  ]
+}
+```
+
+| Endpoint | Rol | Respuesta |
+| --- | --- | --- |
+| `GET /api/candidatos/me` | CANDIDATO | 200 `CandidatoPerfil` |
+| `PUT /api/candidatos/me` | CANDIDATO | 200 `CandidatoPerfil`; 400 validación |
+
+- **Cuerpo del PUT** (`ActualizarCandidatoPeticion`): `nombres`, `apellidos`, `estadoAcademico`, `semestre`, `universidad`,
+  `programa` y `ciudad` con las mismas validaciones del registro (2.3), más:
+
+| Campo | Validación |
+| --- | --- |
+| `githubUrl` | Opcional. `@Size(max = 255)`, debe empezar por `https://github.com/` |
+| `resumen` | Opcional. `@Size(max = 1000)` |
+
+- El **correo no se edita** (es la cuenta de inicio de sesión) y las habilidades van por su propio endpoint (5.2).
+- Las habilidades salen en el orden del catálogo (categoría y nombre, como en 4.1).
+- Igual que la empresa en 4.2, el id sale del token: no hay 403 por propiedad.
+
+### 5.2 Habilidades del candidato (HU-02)
+
+`PUT /api/candidatos/me/habilidades` — CANDIDATO. Reemplaza la lista completa y responde 200 con la lista guardada
+(`CandidatoHabilidad[]`, el mismo formato de `habilidades` en 5.1).
+
+```json
+[
+  { "habilidadId": "…", "nivel": "INTERMEDIO" },
+  { "habilidadId": "…", "nivel": "BASICO" }
+]
+```
+
+| Regla | Validación |
+| --- | --- |
+| Tamaño | De 0 a 30 (`@Size(max = 30)`). Una lista vacía borra todas: la compatibilidad queda en 0 |
+| `habilidadId` | `@NotNull`, debe existir en el catálogo (400 `"habilidades: la habilidad … no existe"`, como en 4.4) |
+| `nivel` | `@NotNull`, `BASICO`, `INTERMEDIO` o `AVANZADO` |
+| Repetidas | No se repite una habilidad (dominio, 400 `"habilidades: no se puede repetir una habilidad"`) |
+
+El cambio de habilidades no recalcula postulaciones ya enviadas: conservan la compatibilidad guardada (regla 6).
+
+### 5.3 Compatibilidad (`CalculadoraCompatibilidad`, dominio)
+
+La fórmula es la de `CLAUDE.md`. Por cada habilidad de la vacante:
+
+- puntaje = `min(1, nivelCandidato / nivelRequerido)`, con BASICO = 1, INTERMEDIO = 2 y AVANZADO = 3;
+  si el candidato no la tiene, el puntaje es 0;
+- peso = 2 si es obligatoria y 1 si es deseable.
+
+Resultado = suma de (puntaje × peso) / suma de pesos × 100, **redondeado a un decimal** (mitad hacia arriba).
+Las habilidades con puntaje menor que 1 forman la lista "lo que te falta" (se expone en la semana 5).
+
+**Ejemplo** (vacante del 4.4 con Spring Boot añadida):
+
+| Habilidad de la vacante | Peso | Candidato | Puntaje | Aporte |
+| --- | --- | --- | --- | --- |
+| Java, INTERMEDIO, obligatoria | 2 | BASICO | 1/2 = 0,5 | 1 |
+| Spring Boot, BASICO, obligatoria | 2 | AVANZADO | min(1, 3/1) = 1 | 2 |
+| Git, BASICO, deseable | 1 | No la tiene | 0 | 0 |
+| **Total** | **5** | | | **3** |
+
+Compatibilidad = 3 / 5 × 100 = **60.0**. Le faltan Java (tiene BASICO, piden INTERMEDIO) y Git.
+
+Pruebas mínimas de la calculadora (prioridad de `CLAUDE.md`): todo cumplido = 100, sin habilidades = 0,
+nivel superior no pasa de 1, peso doble de las obligatorias y redondeo.
+
+### 5.4 Búsqueda de vacantes (HU-03)
+
+Es el `GET /api/vacantes` de la sección 3.3, con estas precisiones:
+
+- **Rol: solo CANDIDATO** (403 para los demás). La fundamentación decía "autenticado", pero una empresa no debe recorrer
+  las vacantes de otras (regla 4) y el administrador no lo necesita en el MVP.
+- Filtros: `modalidad`, `tipo` (el "nivel" de HU-03: `PRACTICA` o `JUNIOR`), `habilidadId`, `ciudad` (sin distinguir
+  mayúsculas ni espacios a los lados), `page` y `size`. Un valor de enum desconocido responde 400.
+- `orden=compatibilidad` (por defecto) o `orden=fechaPublicacion` (las más recientes primero). Con empate en compatibilidad,
+  primero la más reciente.
+- `VacanteResumen` agrega dos campos al ejemplo de 3.3:
+
+| Campo | Contenido |
+| --- | --- |
+| `fechaPublicacion` | `Instant`, para mostrar "publicada hace…" |
+| `postulado` | `true` si el candidato ya se postuló a esa vacante (el frontend muestra "Ya te postulaste" en vez del botón) |
+
+Sin resultados responde 200 con `contenido` vacío.
+
+### 5.5 Postularse (HU-05, reglas 1, 2 y 6)
+
+`POST /api/vacantes/{id}/postulaciones` — CANDIDATO. Sin cuerpo.
+
+| Código | Cuándo |
+| --- | --- |
+| 201 `PostulacionDeCandidato` | Postulación creada en `ENVIADA`, con la compatibilidad calculada en ese momento y guardada (regla 6) |
+| 404 `"La vacante no existe"` | |
+| 409 `"Ya te postulaste a esta vacante"` | Regla 1. También si dos peticiones llegan a la vez (`uq_postulaciones_candidato_vacante`) |
+| 409 `"Esta vacante ya no recibe postulaciones"` | Regla 2: la vacante está `CERRADA` o su `fechaCierre` ya pasó (hora de Colombia) |
+
+Un candidato sin habilidades puede postularse (queda con compatibilidad 0); el frontend le sugiere completarlas antes.
+Retirar una postulación queda fuera del MVP (no está en la fundamentación).
+
+### 5.6 Mis postulaciones (HU-05)
+
+`GET /api/postulaciones/me?estado=ENVIADA&page=0&size=10` — CANDIDATO. `estado` es opcional.
+Responde `PaginaDto<PostulacionDeCandidato>`, las más recientes primero:
+
+```json
+{
+  "id": "…",
+  "fecha": "2026-11-10T14:05:00Z",
+  "estado": "ENVIADA",
+  "compatibilidad": 60.0,
+  "vacante": {
+    "id": "…",
+    "titulo": "Desarrollador Java junior",
+    "empresa": { "id": "…", "razonSocial": "Software Medellín S.A.S." },
+    "modalidad": "HIBRIDA",
+    "ciudad": "Medellín",
+    "estado": "ABIERTA",
+    "fechaCierre": "2026-11-30"
+  }
+}
+```
+
+`estado` de la postulación: `ENVIADA`, `EN_REVISION`, `ENTREVISTA`, `RECHAZADA` o `CONTRATADO` (regla 5; la empresa los cambia
+en la semana 6). Solo lista las del candidato del token.
+
+### 5.7 Postman y frontend
+
+- **Postman** (skill `endpoint-postman`): carpetas Candidatos y Postulaciones. Flujo: registrar candidato → editar perfil →
+  definir habilidades (y una repetida, 400) → buscar con filtros → postularse a la vacante abierta de la carpeta Vacantes (201)
+  → postularse otra vez (409) → postularse a la vacante cerrada (409) → mis postulaciones; y una empresa que intenta buscar (403).
+- **Frontend** (fase 3 de `docs/plan-frontend.md`): `/candidato` (inicio), `/candidato/perfil` (datos y habilidades con nivel),
+  `/candidato/vacantes` (filtros, orden, paginación y botón "Postularme" en cada tarjeta) y `/candidato/postulaciones`,
+  primero con API simulada que siga esta sección. El detalle con compatibilidad (`/candidato/vacantes/:id`) es de la fase 4.
