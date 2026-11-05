@@ -1,3 +1,6 @@
+import { obtenerTokenActual, sesionDesdeToken, type Sesion } from '../../auth/sesion'
+import { ErrorApi } from '../cliente'
+
 const LATENCIA_POR_DEFECTO_MS = 400
 const CLAVE_LATENCIA = 'primer-empleo.mock.latencia'
 
@@ -16,5 +19,32 @@ function leerLatencia(): number {
     return Number.isFinite(valor) && valor > 0 ? valor : LATENCIA_POR_DEFECTO_MS
   } catch {
     return LATENCIA_POR_DEFECTO_MS
+  }
+}
+
+/** Usuario de la sesión simulada, como lo sacaría el backend del token (401 si no hay sesión). */
+export function usuarioActualMock(): Sesion {
+  const token = obtenerTokenActual()
+  const sesion = token ? sesionDesdeToken(token) : null
+  if (!sesion) throw new ErrorApi(401, 'Necesitas iniciar sesión')
+  return sesion
+}
+
+/** Lee un valor guardado en localStorage; si no hay o está dañado, devuelve el valor inicial. */
+export function leerGuardado<T>(clave: string, inicial: () => T): T {
+  try {
+    const texto = localStorage.getItem(clave)
+    if (texto) return JSON.parse(texto) as T
+  } catch {
+    // Almacenamiento bloqueado o dato dañado
+  }
+  return inicial()
+}
+
+export function guardar(clave: string, valor: unknown) {
+  try {
+    localStorage.setItem(clave, JSON.stringify(valor))
+  } catch {
+    // Sin almacenamiento el modo simulado no conserva cambios
   }
 }
