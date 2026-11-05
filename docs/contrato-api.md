@@ -9,7 +9,7 @@ Se completa antes de cada fase del plan (`docs/plan-frontend.md`). Las rutas gen
 | Autenticación (fase 1) | **Acordado** (2026-10-27). Implementado y en producción (PR #11, #12 y #13) |
 | Endpoints que faltan en la fundamentación | **Acordado** (2026-10-27). Sus DTOs completos se detallan antes de cada fase |
 | Fase 2: habilidades, empresas y vacantes (semana 3) | **Acordado** (2026-10-27, PR #16). Implementado: backend 4.1 a 4.4 y pantallas de empresa |
-| Fase 3: candidato y postulaciones (semana 4) | **Acordado** (2026-11-04, PR #21). Precisa 3.3 y adelanta `CalculadoraCompatibilidad`. Implementado: 5.1 y 5.2 |
+| Fase 3: candidato y postulaciones (semana 4) | **Acordado** (2026-11-04, PR #21). Precisa 3.3 y adelanta `CalculadoraCompatibilidad`. Implementado: 5.1 a 5.3 |
 
 Cuando el backend apruebe una sección, se cambia su estado a **Acordado** y cualquier cambio posterior se hace con un pull request que toque este archivo.
 
