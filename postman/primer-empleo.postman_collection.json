@@ -516,7 +516,8 @@
                   "const catalogo = pm.response.json();",
                   "pm.test(\"Trae el catálogo inicial de V4\", () => pm.expect(catalogo.length).to.be.at.least(35));",
                   "pm.test(\"Empieza por LENGUAJE\", () => pm.expect(catalogo[0].categoria).to.eql(\"LENGUAJE\"));",
-                  "pm.collectionVariables.set(\"habilidadJavaId\", catalogo.find(h => h.nombre === \"Java\").id);"
+                  "pm.collectionVariables.set(\"habilidadJavaId\", catalogo.find(h => h.nombre === \"Java\").id);",
+                  "pm.collectionVariables.set(\"habilidadGitId\", catalogo.find(h => h.nombre === \"Git\").id);"
                 ]
               }
             }
@@ -1266,6 +1267,896 @@
       ]
     },
     {
+      "name": "Vacantes",
+      "description": "Publicar, editar, cerrar y listar vacantes (4.4 y 3.2). La empresa de Autenticación ya quedó verificada en Empresas; aquí se registra una segunda empresa, sin verificar, para las reglas 3 y 4.",
+      "item": [
+        {
+          "name": "Registrar otra empresa sin verificar (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/registro/empresa",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "registro",
+                "empresa"
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailOtraEmpresa}}\",\n  \"password\": \"{{passwordPrueba}}\",\n  \"razonSocial\": \"Otra Empresa de Software S.A.S.\",\n  \"nit\": \"{{nitOtraEmpresa}}\",\n  \"sector\": \"Desarrollo de software\",\n  \"ciudad\": \"Medellín\",\n  \"sitioWeb\": null\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const sello = Date.now().toString();",
+                  "pm.collectionVariables.set(\"emailOtraEmpresa\", `postman.otra.${sello}@example.com`);",
+                  "// Empieza por 7 para no chocar con el NIT de la primera empresa (empieza por 8)",
+                  "pm.collectionVariables.set(\"nitOtraEmpresa\", \"7\" + sello.slice(-9));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"tokenOtraEmpresa\", pm.response.json().token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publicar sin estar verificada (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ]
+            },
+            "description": "Regla 3: solo las empresas verificadas publican.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOtraEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Desarrollador Java junior\",\n  \"descripcion\": \"Apoyarás el desarrollo de APIs REST con Spring Boot para clientes del sector financiero en Medellín.\",\n  \"tipo\": \"JUNIOR\",\n  \"modalidad\": \"HIBRIDA\",\n  \"ciudad\": \"Medellín\",\n  \"salarioMin\": 2800000,\n  \"salarioMax\": 3500000,\n  \"fechaCierre\": \"{{fechaCierreVacante}}\",\n  \"habilidades\": [\n    {\n      \"habilidadId\": \"{{habilidadJavaId}}\",\n      \"nivelRequerido\": \"INTERMEDIO\",\n      \"obligatoria\": true\n    },\n    {\n      \"habilidadId\": \"{{habilidadGitId}}\",\n      \"nivelRequerido\": \"BASICO\",\n      \"obligatoria\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const enColombia = new Date(Date.now() - 5 * 3600 * 1000);",
+                  "enColombia.setUTCDate(enColombia.getUTCDate() + 30);",
+                  "pm.collectionVariables.set(\"fechaCierreVacante\", enColombia.toISOString().slice(0, 10));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Mensaje: Tu empresa debe estar verificada para publicar vacantes\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Tu empresa debe estar verificada para publicar vacantes\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publicar vacante (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Desarrollador Java junior\",\n  \"descripcion\": \"Apoyarás el desarrollo de APIs REST con Spring Boot para clientes del sector financiero en Medellín.\",\n  \"tipo\": \"JUNIOR\",\n  \"modalidad\": \"HIBRIDA\",\n  \"ciudad\": \"Medellín\",\n  \"salarioMin\": 2800000,\n  \"salarioMax\": 3500000,\n  \"fechaCierre\": \"{{fechaCierreVacante}}\",\n  \"habilidades\": [\n    {\n      \"habilidadId\": \"{{habilidadJavaId}}\",\n      \"nivelRequerido\": \"INTERMEDIO\",\n      \"obligatoria\": true\n    },\n    {\n      \"habilidadId\": \"{{habilidadGitId}}\",\n      \"nivelRequerido\": \"BASICO\",\n      \"obligatoria\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const enColombia = new Date(Date.now() - 5 * 3600 * 1000);",
+                  "enColombia.setUTCDate(enColombia.getUTCDate() + 30);",
+                  "pm.collectionVariables.set(\"fechaCierreVacante\", enColombia.toISOString().slice(0, 10));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201 Created\", () => pm.response.to.have.status(201));",
+                  "const vacante = pm.response.json();",
+                  "pm.collectionVariables.set(\"vacanteId\", vacante.id);",
+                  "pm.test(\"Queda abierta\", () => pm.expect(vacante.estado).to.eql(\"ABIERTA\"));",
+                  "pm.test(\"Primero las obligatorias\", () => pm.expect(vacante.habilidades[0].obligatoria).to.eql(true));",
+                  "pm.test(\"Trae la empresa\", () => pm.expect(vacante.empresa.id).to.eql(pm.collectionVariables.get(\"empresaId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publicar con fecha de cierre pasada (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Desarrollador Java junior\",\n  \"descripcion\": \"Apoyarás el desarrollo de APIs REST con Spring Boot para clientes del sector financiero en Medellín.\",\n  \"tipo\": \"JUNIOR\",\n  \"modalidad\": \"HIBRIDA\",\n  \"ciudad\": \"Medellín\",\n  \"salarioMin\": 2800000,\n  \"salarioMax\": 3500000,\n  \"fechaCierre\": \"2020-01-01\",\n  \"habilidades\": [\n    {\n      \"habilidadId\": \"{{habilidadJavaId}}\",\n      \"nivelRequerido\": \"INTERMEDIO\",\n      \"obligatoria\": true\n    },\n    {\n      \"habilidadId\": \"{{habilidadGitId}}\",\n      \"nivelRequerido\": \"BASICO\",\n      \"obligatoria\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: fechaCierre: debe ser hoy o una fecha posterior\", () => pm.expect(pm.response.json().mensaje).to.eql(\"fechaCierre: debe ser hoy o una fecha posterior\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publicar sin habilidad obligatoria (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Desarrollador Java junior\",\n  \"descripcion\": \"Apoyarás el desarrollo de APIs REST con Spring Boot para clientes del sector financiero en Medellín.\",\n  \"tipo\": \"JUNIOR\",\n  \"modalidad\": \"HIBRIDA\",\n  \"ciudad\": \"Medellín\",\n  \"salarioMin\": 2800000,\n  \"salarioMax\": 3500000,\n  \"fechaCierre\": \"{{fechaCierreVacante}}\",\n  \"habilidades\": [\n    {\n      \"habilidadId\": \"{{habilidadGitId}}\",\n      \"nivelRequerido\": \"BASICO\",\n      \"obligatoria\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: habilidades: al menos una debe ser obligatoria\", () => pm.expect(pm.response.json().mensaje).to.eql(\"habilidades: al menos una debe ser obligatoria\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publicar con habilidad inexistente (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Desarrollador Java junior\",\n  \"descripcion\": \"Apoyarás el desarrollo de APIs REST con Spring Boot para clientes del sector financiero en Medellín.\",\n  \"tipo\": \"JUNIOR\",\n  \"modalidad\": \"HIBRIDA\",\n  \"ciudad\": \"Medellín\",\n  \"salarioMin\": 2800000,\n  \"salarioMax\": 3500000,\n  \"fechaCierre\": \"{{fechaCierreVacante}}\",\n  \"habilidades\": [\n    {\n      \"habilidadId\": \"00000000-0000-0000-0000-000000000000\",\n      \"nivelRequerido\": \"BASICO\",\n      \"obligatoria\": true\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Indica la habilidad que no existe\", () => pm.expect(pm.response.json().mensaje).to.eql(\"habilidades: la habilidad 00000000-0000-0000-0000-000000000000 no existe\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Publicar como candidato (403)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ]
+            },
+            "description": "Usa el token del candidato que guardó Autenticación.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Desarrollador Java junior\",\n  \"descripcion\": \"Apoyarás el desarrollo de APIs REST con Spring Boot para clientes del sector financiero en Medellín.\",\n  \"tipo\": \"JUNIOR\",\n  \"modalidad\": \"HIBRIDA\",\n  \"ciudad\": \"Medellín\",\n  \"salarioMin\": 2800000,\n  \"salarioMax\": 3500000,\n  \"fechaCierre\": \"{{fechaCierreVacante}}\",\n  \"habilidades\": [\n    {\n      \"habilidadId\": \"{{habilidadJavaId}}\",\n      \"nivelRequerido\": \"INTERMEDIO\",\n      \"obligatoria\": true\n    },\n    {\n      \"habilidadId\": \"{{habilidadGitId}}\",\n      \"nivelRequerido\": \"BASICO\",\n      \"obligatoria\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar vacante (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Desarrollador backend Java junior\",\n  \"descripcion\": \"Apoyarás el desarrollo de APIs REST con Spring Boot para clientes del sector financiero en Medellín.\",\n  \"tipo\": \"JUNIOR\",\n  \"modalidad\": \"HIBRIDA\",\n  \"ciudad\": \"Medellín\",\n  \"salarioMin\": 2800000,\n  \"salarioMax\": 3500000,\n  \"fechaCierre\": \"{{fechaCierreVacante}}\",\n  \"habilidades\": [\n    {\n      \"habilidadId\": \"{{habilidadJavaId}}\",\n      \"nivelRequerido\": \"INTERMEDIO\",\n      \"obligatoria\": true\n    },\n    {\n      \"habilidadId\": \"{{habilidadGitId}}\",\n      \"nivelRequerido\": \"BASICO\",\n      \"obligatoria\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Guarda el nuevo título\", () => pm.expect(pm.response.json().titulo).to.eql(\"Desarrollador backend Java junior\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver vacante como candidato (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Es la vacante publicada\", () => pm.expect(pm.response.json().id).to.eql(pm.collectionVariables.get(\"vacanteId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver vacante de otra empresa (403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteId}}"
+              ]
+            },
+            "description": "Regla 4: una empresa solo ve sus propias vacantes.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOtraEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar vacante de otra empresa (403)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOtraEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Desarrollador Java junior\",\n  \"descripcion\": \"Apoyarás el desarrollo de APIs REST con Spring Boot para clientes del sector financiero en Medellín.\",\n  \"tipo\": \"JUNIOR\",\n  \"modalidad\": \"HIBRIDA\",\n  \"ciudad\": \"Medellín\",\n  \"salarioMin\": 2800000,\n  \"salarioMax\": 3500000,\n  \"fechaCierre\": \"{{fechaCierreVacante}}\",\n  \"habilidades\": [\n    {\n      \"habilidadId\": \"{{habilidadJavaId}}\",\n      \"nivelRequerido\": \"INTERMEDIO\",\n      \"obligatoria\": true\n    },\n    {\n      \"habilidadId\": \"{{habilidadGitId}}\",\n      \"nivelRequerido\": \"BASICO\",\n      \"obligatoria\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar mis vacantes abiertas (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/me/vacantes?estado=ABIERTA&page=0&size=10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "me",
+                "vacantes"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "ABIERTA"
+                },
+                {
+                  "key": "page",
+                  "value": "0"
+                },
+                {
+                  "key": "size",
+                  "value": "10"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const pagina = pm.response.json();",
+                  "const publicada = pagina.contenido.find(v => v.id === pm.collectionVariables.get(\"vacanteId\"));",
+                  "pm.test(\"Incluye la vacante publicada\", () => pm.expect(publicada).to.be.an(\"object\"));",
+                  "pm.test(\"Sin postulaciones todavía\", () => pm.expect(publicada.totalPostulaciones).to.eql(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar mis vacantes con estado inválido (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/me/vacantes?estado=BORRADOR",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "me",
+                "vacantes"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "BORRADOR"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: Valor inválido para el parámetro estado\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Valor inválido para el parámetro estado\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cerrar vacante de otra empresa (403)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteId}}/cerrar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteId}}",
+                "cerrar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOtraEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cerrar vacante (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteId}}/cerrar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteId}}",
+                "cerrar"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Queda cerrada\", () => pm.expect(pm.response.json().estado).to.eql(\"CERRADA\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cerrar vacante otra vez (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteId}}/cerrar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteId}}",
+                "cerrar"
+              ]
+            },
+            "description": "Idempotente: cerrar una vacante ya cerrada no cambia nada.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Sigue cerrada\", () => pm.expect(pm.response.json().estado).to.eql(\"CERRADA\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Editar vacante cerrada (409)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteId}}"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Desarrollador Java junior\",\n  \"descripcion\": \"Apoyarás el desarrollo de APIs REST con Spring Boot para clientes del sector financiero en Medellín.\",\n  \"tipo\": \"JUNIOR\",\n  \"modalidad\": \"HIBRIDA\",\n  \"ciudad\": \"Medellín\",\n  \"salarioMin\": 2800000,\n  \"salarioMax\": 3500000,\n  \"fechaCierre\": \"{{fechaCierreVacante}}\",\n  \"habilidades\": [\n    {\n      \"habilidadId\": \"{{habilidadJavaId}}\",\n      \"nivelRequerido\": \"INTERMEDIO\",\n      \"obligatoria\": true\n    },\n    {\n      \"habilidadId\": \"{{habilidadGitId}}\",\n      \"nivelRequerido\": \"BASICO\",\n      \"obligatoria\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Mensaje: No se puede editar una vacante cerrada\", () => pm.expect(pm.response.json().mensaje).to.eql(\"No se puede editar una vacante cerrada\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver vacante inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/00000000-0000-0000-0000-000000000000",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "00000000-0000-0000-0000-000000000000"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Mensaje: La vacante no existe\", () => pm.expect(pm.response.json().mensaje).to.eql(\"La vacante no existe\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Seguridad",
       "item": [
         {
@@ -1342,6 +2233,30 @@
     },
     {
       "key": "empresaId",
+      "value": ""
+    },
+    {
+      "key": "habilidadGitId",
+      "value": ""
+    },
+    {
+      "key": "emailOtraEmpresa",
+      "value": ""
+    },
+    {
+      "key": "nitOtraEmpresa",
+      "value": ""
+    },
+    {
+      "key": "tokenOtraEmpresa",
+      "value": ""
+    },
+    {
+      "key": "fechaCierreVacante",
+      "value": ""
+    },
+    {
+      "key": "vacanteId",
       "value": ""
     }
   ]

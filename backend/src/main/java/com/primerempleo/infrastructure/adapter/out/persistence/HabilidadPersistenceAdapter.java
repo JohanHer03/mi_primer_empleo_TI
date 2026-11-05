@@ -3,7 +3,9 @@ package com.primerempleo.infrastructure.adapter.out.persistence;
 import com.primerempleo.application.port.out.HabilidadRepositoryPort;
 import com.primerempleo.domain.model.CategoriaHabilidad;
 import com.primerempleo.domain.model.Habilidad;
+import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,6 +25,11 @@ public class HabilidadPersistenceAdapter implements HabilidadRepositoryPort {
                 ? repositorio.findAll()
                 : repositorio.findByCategoria(categoria);
         return entidades.stream().map(mapper::aDominio).toList();
+    }
+
+    @Override
+    public List<Habilidad> buscarPorIds(Collection<UUID> ids) {
+        return repositorio.findAllById(ids).stream().map(mapper::aDominio).toList();
     }
 
     @Override

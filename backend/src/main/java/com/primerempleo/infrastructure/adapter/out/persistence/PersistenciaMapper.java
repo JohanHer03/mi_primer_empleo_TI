@@ -4,6 +4,8 @@ import com.primerempleo.domain.model.Candidato;
 import com.primerempleo.domain.model.Empresa;
 import com.primerempleo.domain.model.Habilidad;
 import com.primerempleo.domain.model.Usuario;
+import com.primerempleo.domain.model.Vacante;
+import com.primerempleo.domain.model.VacanteDeEmpresaResumen;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -35,4 +37,17 @@ public interface PersistenciaMapper {
     HabilidadEntity aEntidad(Habilidad habilidad);
 
     Habilidad aDominio(HabilidadEntity entidad);
+
+    VacanteEntity aEntidad(Vacante vacante);
+
+    Vacante aDominio(VacanteEntity entidad);
+
+    /** Copia los datos editables y reemplaza la lista de habilidades; empresa y fecha de publicación no cambian. */
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "empresaId", ignore = true)
+    @Mapping(target = "fechaPublicacion", ignore = true)
+    void copiar(Vacante vacante, @MappingTarget VacanteEntity entidad);
+
+    /** No toca la colección de habilidades, así el listado no las carga. */
+    VacanteDeEmpresaResumen aResumen(VacanteEntity entidad, long totalPostulaciones);
 }
