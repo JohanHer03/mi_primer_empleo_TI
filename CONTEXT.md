@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-11-04 · Semana 4 en curso: contrato acordado y perfil y habilidades del candidato listos; siguen compatibilidad, búsqueda y postulaciones
+Última actualización: 2026-11-04 · Semana 4 en curso: perfil y habilidades del candidato y `CalculadoraCompatibilidad` listos; siguen búsqueda y postulaciones
 
 ## Propósito
 
@@ -49,6 +49,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-11-04 | `CalculadoraCompatibilidad` es una clase estática del dominio y suma los puntajes multiplicados por 6 (mcm de los niveles) en enteros; el porcentaje es `BigDecimal` con un decimal (`HALF_UP`) | Sin estado ni dependencias; la suma es exacta y el redondeo no depende de errores de coma flotante. Se guarda en `postulaciones.compatibilidad` (`NUMERIC(5,2)`) |
 | 2026-11-04 | Las habilidades del candidato son parte del modelo `Candidato` (lista validada en el dominio) y un `@ElementCollection` sobre `candidato_habilidades` | Igual que las de la vacante; `CalculadoraCompatibilidad` las recibirá junto con el candidato |
 | 2026-11-04 | `ManejadorGlobalErrores` formatea también la validación de parámetros (`HandlerMethodValidationException`) como `"campo[i].subcampo: mensaje"` | El cuerpo de `PUT /api/candidatos/me/habilidades` es un arreglo: Spring lo valida con su validación de métodos, no con `MethodArgumentNotValidException` |
 | 2026-11-04 | El cliente HTTP lee el token de `obtenerTokenActual()` desde el inicio; `AuthProvider` solo registra el cierre de sesión ante un 401 | Al recargar una página protegida, sus consultas salían sin token (401): React ejecuta los efectos de los hijos antes que el de `AuthProvider` |
@@ -118,7 +119,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | CRUD de vacantes (HU-07; contrato 3.2 y 4.4) | Hecho (PR #19) | `POST`, `PUT` y `PATCH /api/vacantes/{id}/cerrar` (EMPRESA dueña), `GET /api/vacantes/{id}` (autenticado) y `GET /api/empresas/me/vacantes` paginado con `totalPostulaciones`. Reglas 3 y 4 en `VacanteService`. 160 pruebas; probado contra Supabase con la carpeta Vacantes de Postman (44 peticiones, 85 aserciones) |
 | Frontend fase 2: empresa (HU-06, HU-07) | Hecho (PR #20) | Inicio, perfil (aviso si no está verificada), mis vacantes (filtro, paginación, vencidas, cerrar) y formulario de publicar y editar con habilidades del catálogo. Mocks de empresas, habilidades y vacantes. Probado en modo simulado y contra el backend local |
 | Contrato de la fase 3: candidato y postulaciones (semana 4) | Acordado (PR #21) | Sección 5 de `docs/contrato-api.md`: perfil y habilidades del candidato, `CalculadoraCompatibilidad` adelantada, búsqueda solo para CANDIDATO, postularse y mis postulaciones |
-| Perfil y habilidades del candidato (HU-02; contrato 5.1 y 5.2) | Hecho en la rama `feat/backend-candidatos` | `GET` y `PUT /api/candidatos/me` y `PUT /api/candidatos/me/habilidades` (reemplaza la lista, 0 a 30). 182 pruebas; probado contra Supabase con la carpeta Candidatos de Postman |
+| Perfil y habilidades del candidato (HU-02; contrato 5.1 y 5.2) | Hecho (PR #22) | `GET` y `PUT /api/candidatos/me` y `PUT /api/candidatos/me/habilidades` (reemplaza la lista, 0 a 30). 182 pruebas; probado contra Supabase con la carpeta Candidatos de Postman |
+| `CalculadoraCompatibilidad` (contrato 5.3) | Hecho en la rama `feat/backend-compatibilidad` | En `domain/service`, Java puro: porcentaje con un decimal y lista de faltantes. 8 pruebas, incluido el ejemplo del contrato (60.0) |
 | Frontend fases 3 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API), V3 (ajustes de revisión) y V4 (nombre de habilidad único sin distinguir mayúsculas y catálogo inicial de 35 habilidades) aplicadas en Supabase (PostgreSQL 17). Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
