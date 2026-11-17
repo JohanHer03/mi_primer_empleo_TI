@@ -1,0 +1,185 @@
+/* Estilos propios de las pantallas del candidato (fase 3); los comunes están en components/Paginas.module.css. */
+
+/* Indicador de compatibilidad */
+
+.compatibilidad {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 5.5rem;
+  padding: var(--espacio-2) var(--espacio-3);
+  border-radius: var(--radio);
+  text-align: center;
+}
+
+.compatibilidadValor {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.compatibilidadTexto {
+  font-size: 0.75rem;
+}
+
+.compatibilidadalta {
+  background: color-mix(in srgb, var(--color-exito) 14%, transparent);
+  color: var(--color-exito);
+}
+
+.compatibilidadmedia {
+  background: var(--color-advertencia-fondo);
+  color: var(--color-advertencia);
+}
+
+.compatibilidadbaja {
+  background: var(--color-fondo);
+  color: var(--color-texto-suave);
+  border: 1px solid var(--color-borde);
+}
+
+/* Tarjetas de vacantes y postulaciones */
+
+.tarjeta {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--espacio-4);
+  padding: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-grande);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra);
+}
+
+.empresa {
+  margin: 0;
+  font-weight: 600;
+}
+
+.accionTarjeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--espacio-1);
+}
+
+.yaPostulado {
+  font-weight: 600;
+  color: var(--color-exito);
+  white-space: nowrap;
+}
+
+.mensajeTarjeta {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+/* Filtros de la búsqueda */
+
+.filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
+  align-items: end;
+  gap: var(--espacio-3);
+  padding: var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-grande);
+  background: var(--color-superficie);
+}
+
+.barraResultados {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espacio-2);
+}
+
+.barraResultados p {
+  margin: 0;
+  color: var(--color-texto-suave);
+}
+
+.orden {
+  display: flex;
+  align-items: center;
+  gap: var(--espacio-2);
+}
+
+.orden select {
+  width: auto;
+}
+
+/* Perfil */
+
+.seccion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-3);
+  max-width: 44rem;
+}
+
+.anchoSeccion {
+  max-width: 44rem;
+}
+
+.seccion h2 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.habilidad {
+  display: grid;
+  grid-template-columns: minmax(10rem, 2fr) minmax(8rem, 1fr) auto;
+  align-items: center;
+  gap: var(--espacio-2);
+  padding: var(--espacio-2);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio);
+  background: var(--color-superficie);
+}
+
+/* Inicio */
+
+.resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: var(--espacio-3);
+}
+
+.dato {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espacio-1);
+  padding: var(--espacio-3) var(--espacio-4);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-grande);
+  background: var(--color-superficie);
+}
+
+.datoValor {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.datoTexto {
+  color: var(--color-texto-suave);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 640px) {
+  .tarjeta {
+    grid-template-columns: auto 1fr;
+  }
+
+  .accionTarjeta {
+    grid-column: 1 / -1;
+    align-items: stretch;
+  }
+
+  .habilidad {
+    grid-template-columns: 1fr 1fr;
+  }
+}

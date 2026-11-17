@@ -1,4 +1,12 @@
-import type { CategoriaHabilidad, EstadoVacante, Modalidad, NivelHabilidad, TipoVacante } from '../api/tipos'
+import type {
+  CategoriaHabilidad,
+  EstadoAcademico,
+  EstadoPostulacion,
+  EstadoVacante,
+  Modalidad,
+  NivelHabilidad,
+  TipoVacante,
+} from '../api/tipos'
 
 // Textos y formatos en español para los valores que llegan de la API.
 
@@ -23,6 +31,34 @@ export const TEXTO_CATEGORIA: Record<CategoriaHabilidad, string> = {
   BASE_DATOS: 'Bases de datos',
   HERRAMIENTA: 'Herramientas',
   BLANDA: 'Habilidades blandas',
+}
+
+export const TEXTO_ESTADO_ACADEMICO: Record<EstadoAcademico, string> = {
+  ESTUDIANTE: 'Estudiante',
+  EGRESADO: 'Egresado',
+}
+
+/** En el orden del flujo de la regla 5. */
+export const TEXTO_ESTADO_POSTULACION: Record<EstadoPostulacion, string> = {
+  ENVIADA: 'Enviada',
+  EN_REVISION: 'En revisión',
+  ENTREVISTA: 'Entrevista',
+  CONTRATADO: 'Contratado',
+  RECHAZADA: 'Rechazada',
+}
+
+const PORCENTAJE = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+
+/** 66.7 → "66,7 %". */
+export function formatearCompatibilidad(valor: number): string {
+  return `${PORCENTAJE.format(valor)} %`
+}
+
+/** Rango de la compatibilidad para el color de su indicador. */
+export function nivelCompatibilidad(valor: number): 'alta' | 'media' | 'baja' {
+  if (valor >= 70) return 'alta'
+  if (valor >= 40) return 'media'
+  return 'baja'
 }
 
 const ZONA_COLOMBIA = 'America/Bogota'

@@ -36,6 +36,12 @@ La empresa de demostración ya está verificada y trae tres vacantes (abierta, v
 registradas en `/registro` quedan sin verificar: sirven para ver el aviso y el bloqueo de publicar (regla 3).
 Perfiles y vacantes simuladas se guardan en `localStorage` (`primer-empleo.mock.empresas` y `primer-empleo.mock.vacantes`).
 
+El candidato de demostración (Laura) ya tiene cinco habilidades y tres postulaciones (en entrevista, en revisión y rechazada).
+La búsqueda suma cuatro vacantes abiertas de otras dos empresas, con compatibilidades distintas; la compatibilidad
+simulada copia la fórmula de `CalculadoraCompatibilidad` (`src/api/mocks/compatibilidad.ts`). Los candidatos registrados
+en `/registro` empiezan sin habilidades. Se guardan en `primer-empleo.mock.candidatos` y `primer-empleo.mock.postulaciones`.
+Si ya habías usado el modo simulado y no ves las vacantes nuevas, borra `primer-empleo.mock.vacantes` del `localStorage`.
+
 Para simular una red lenta o el arranque en frío del backend (y ver los estados de carga y el aviso
 "Estamos despertando el servidor"), en la consola del navegador:
 

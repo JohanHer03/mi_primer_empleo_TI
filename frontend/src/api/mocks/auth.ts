@@ -6,6 +6,7 @@ import type {
   RegistroEmpresaPeticion,
   Rol,
 } from '../tipos'
+import { registrarPerfilCandidatoMock } from './candidatos'
 import { registrarPerfilEmpresaMock } from './empresas'
 import { esperar } from './utilidades'
 
@@ -74,6 +75,7 @@ export async function registrarCandidatoMock(datos: RegistroCandidatoPeticion): 
   }
   const cuenta = crearCuenta(datos.email, datos.password, 'CANDIDATO')
   guardarCuentaRegistrada(cuenta)
+  registrarPerfilCandidatoMock(cuenta.id, cuenta.email, datos)
   return { token: crearTokenFalso(cuenta) }
 }
 

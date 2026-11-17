@@ -84,6 +84,51 @@ function vacantesDemo(): VacanteGuardada[] {
         habilidades: requeridas(['SQL', 'INTERMEDIO', true], ['Python', 'BASICO', true]),
       },
     },
+    // Vacantes de otras empresas, para que la búsqueda del candidato tenga variedad de compatibilidad
+    ...vacantesDeOtrasEmpresas(enDias),
+  ]
+}
+
+function vacantesDeOtrasEmpresas(enDias: (dias: number) => string): VacanteGuardada[] {
+  const nodo = { id: '55555555-5555-5555-5555-555555555556', razonSocial: 'Nodo Software S.A.S.' }
+  const datos = { id: '55555555-5555-5555-5555-555555555557', razonSocial: 'Datos del Valle de Aburrá S.A.S.' }
+  const abierta = (
+    numero: number,
+    empresa: VacanteDetalle['empresa'],
+    titulo: string,
+    tipo: VacanteDetalle['tipo'],
+    modalidad: VacanteDetalle['modalidad'],
+    ciudad: string,
+    salarioMin: number | null,
+    publicadaHace: number,
+    habilidades: HabilidadRequerida[],
+  ): VacanteGuardada => ({
+    totalPostulaciones: numero + 2,
+    detalle: {
+      id: `66666666-0000-4000-8000-00000000001${numero}`,
+      titulo,
+      descripcion: `${titulo} en ${empresa.razonSocial}. Trabajarás con un equipo que acompaña a quienes empiezan.`,
+      tipo,
+      modalidad,
+      ciudad,
+      salarioMin,
+      salarioMax: null,
+      estado: 'ABIERTA',
+      fechaPublicacion: `${enDias(-publicadaHace)}T15:00:00Z`,
+      fechaCierre: enDias(20 + numero),
+      empresa,
+      habilidades,
+    },
+  })
+  return [
+    abierta(1, nodo, 'Practicante de desarrollo backend', 'PRACTICA', 'HIBRIDA', 'Medellín', 1423500, 1,
+      requeridas(['Java', 'BASICO', true], ['Spring Boot', 'BASICO', true], ['Docker', 'BASICO', false], ['Git', 'BASICO', false])),
+    abierta(2, nodo, 'Desarrollador full stack junior', 'JUNIOR', 'REMOTA', 'Medellín', 3000000, 5,
+      requeridas(['JavaScript', 'INTERMEDIO', true], ['React', 'BASICO', true], ['Git', 'BASICO', false], ['Node.js', 'BASICO', false])),
+    abierta(3, datos, 'Practicante de bases de datos', 'PRACTICA', 'PRESENCIAL', 'Envigado', 1423500, 8,
+      requeridas(['SQL', 'BASICO', true], ['PostgreSQL', 'BASICO', false], ['Trabajo en equipo', 'BASICO', false])),
+    abierta(4, datos, 'Analista QA junior', 'JUNIOR', 'HIBRIDA', 'Bello', null, 2,
+      requeridas(['Postman', 'BASICO', true], ['Comunicación', 'INTERMEDIO', false], ['Jira', 'BASICO', false], ['SQL', 'BASICO', false])),
   ]
 }
 
@@ -121,6 +166,11 @@ function vacantePropia(id: string): VacanteGuardada {
   if (!guardada) throw new ErrorApi(404, 'La vacante no existe')
   if (guardada.detalle.empresa.id !== empresa.id) throw new ErrorApi(403, 'La vacante pertenece a otra empresa')
   return guardada
+}
+
+/** Todas las vacantes simuladas, de todas las empresas: las usan la búsqueda y las postulaciones. */
+export function vacantesGuardadasMock(): VacanteDetalle[] {
+  return leerVacantes().map((v) => v.detalle)
 }
 
 function reemplazar(actualizada: VacanteGuardada) {
