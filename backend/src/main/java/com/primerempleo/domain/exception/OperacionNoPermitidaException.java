@@ -13,4 +13,9 @@ public class OperacionNoPermitidaException extends RuntimeException {
     public static OperacionNoPermitidaException vacanteCerrada() {
         return new OperacionNoPermitidaException("No se puede editar una vacante cerrada");
     }
+
+    /** Regla 2: la vacante está cerrada o su fecha de cierre ya pasó (docs/contrato-api.md, 5.5). */
+    public static OperacionNoPermitidaException vacanteSinPostulaciones() {
+        return new OperacionNoPermitidaException("Esta vacante ya no recibe postulaciones");
+    }
 }

@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-11-04 · Semana 4 en curso: perfil, habilidades, `CalculadoraCompatibilidad` y búsqueda de vacantes listos; siguen las postulaciones
+Última actualización: 2026-11-04 · Semana 4 en curso: backend completo (perfil, habilidades, compatibilidad, búsqueda y postulaciones); falta la fase 3 del frontend
 
 ## Propósito
 
@@ -49,6 +49,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-11-16 | Al postularse, primero se comprueba la regla 1 (409 "Ya te postulaste") y luego la 2 (409 "ya no recibe postulaciones"); una vacante abierta pero vencida tampoco recibe postulaciones | Si ya se postuló a una vacante que luego cerró, el mensaje más útil es que ya se postuló. `uq_postulaciones_candidato_vacante` respalda la regla 1 con el mismo 409 |
+| 2026-11-16 | "Mis postulaciones" sale de una consulta JPQL que une postulaciones, vacantes y empresas en una sola fila (`PostulacionConVacanteFila`) | Evita cargar cada vacante con sus habilidades solo para mostrar el título |
 | 2026-11-16 | Supabase pausó el proyecto gratuito tras unos 11 días sin actividad: el backend no arrancaba (`tenant/user ... not found`) y la API de producción respondía 500; se restauró desde el panel de Supabase | Antes de la entrega y la sustentación, hacer una petición a la API unos días antes y el mismo día |
 | 2026-11-16 | La búsqueda filtra en la base con una `Specification` (Criteria) que trae las habilidades con fetch join; el filtro por habilidad es una subconsulta | Los filtros son opcionales (un parámetro null en `is null` falla en PostgreSQL) y filtrar sobre el fetch join recortaría las habilidades con las que se calcula la compatibilidad |
 | 2026-11-16 | `PostulacionEntity` llega con la búsqueda, solo para saber a qué vacantes se postuló el candidato | `postulado` del contrato 5.4; el PR de postulaciones le suma crear y listar |
@@ -124,7 +126,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Contrato de la fase 3: candidato y postulaciones (semana 4) | Acordado (PR #21) | Sección 5 de `docs/contrato-api.md`: perfil y habilidades del candidato, `CalculadoraCompatibilidad` adelantada, búsqueda solo para CANDIDATO, postularse y mis postulaciones |
 | Perfil y habilidades del candidato (HU-02; contrato 5.1 y 5.2) | Hecho (PR #22) | `GET` y `PUT /api/candidatos/me` y `PUT /api/candidatos/me/habilidades` (reemplaza la lista, 0 a 30). 182 pruebas; probado contra Supabase con la carpeta Candidatos de Postman |
 | `CalculadoraCompatibilidad` (contrato 5.3) | Hecho (PR #23) | En `domain/service`, Java puro: porcentaje con un decimal y lista de faltantes. 8 pruebas, incluido el ejemplo del contrato (60.0) |
-| Búsqueda de vacantes (HU-03; contrato 5.4) | Hecho en la rama `feat/backend-busqueda` | `GET /api/vacantes` solo para CANDIDATO: filtros opcionales con Criteria, compatibilidad calculada al consultar, orden y paginación en memoria, `postulado`. 204 pruebas; probado contra Supabase con la carpeta Búsqueda de Postman (61 peticiones, 122 aserciones) |
+| Búsqueda de vacantes (HU-03; contrato 5.4) | Hecho (PR #24) | `GET /api/vacantes` solo para CANDIDATO: filtros opcionales con Criteria, compatibilidad calculada al consultar, orden y paginación en memoria, `postulado`. 204 pruebas; probado contra Supabase con la carpeta Búsqueda de Postman (61 peticiones, 122 aserciones) |
+| Postulaciones del candidato (HU-05; contrato 5.5 y 5.6) | Hecho en la rama `feat/backend-postulaciones` | `POST /api/vacantes/{id}/postulaciones` con las reglas 1, 2 y 6 y `GET /api/postulaciones/me` paginado. `totalPostulaciones` de "Mis vacantes" pasa a JPQL. 218 pruebas; probado contra Supabase con la carpeta Postulaciones de Postman (71 peticiones, 144 aserciones) |
 | Frontend fases 3 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API), V3 (ajustes de revisión) y V4 (nombre de habilidad único sin distinguir mayúsculas y catálogo inicial de 35 habilidades) aplicadas en Supabase (PostgreSQL 17). Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
