@@ -100,7 +100,9 @@ function TarjetaPostulacion({ postulacion }: { postulacion: PostulacionDeCandida
       <IndicadorCompatibilidad valor={postulacion.compatibilidad} texto="al postularte" />
       <div className={comunes.tarjetaDatos}>
         <h2 className={comunes.tarjetaTitulo}>
-          {vacante.titulo}
+          <Link to={`/candidato/vacantes/${vacante.id}`} className={estilos.enlaceTitulo}>
+            {vacante.titulo}
+          </Link>
           <span className={`${comunes.insignia} ${comunes[INSIGNIA[postulacion.estado]]}`}>
             {TEXTO_ESTADO_POSTULACION[postulacion.estado]}
           </span>

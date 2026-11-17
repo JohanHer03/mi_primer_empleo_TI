@@ -10,7 +10,7 @@ Se completa antes de cada fase del plan (`docs/plan-frontend.md`). Las rutas gen
 | Endpoints que faltan en la fundamentación | **Acordado** (2026-10-27). Sus DTOs completos se detallan antes de cada fase |
 | Fase 2: habilidades, empresas y vacantes (semana 3) | **Acordado** (2026-10-27, PR #16). Implementado: backend 4.1 a 4.4 y pantallas de empresa |
 | Fase 3: candidato y postulaciones (semana 4) | **Acordado** (2026-11-04, PR #21). Precisa 3.3 y adelanta `CalculadoraCompatibilidad`. Implementado: backend 5.1 a 5.6 (PR #22 a #25) y pantallas del candidato (PR #26) |
-| Fase 4: compatibilidad y "lo que te falta" (semana 5) | **Acordado** (2026-11-16, PR #27). Precisa `GET /api/vacantes/{id}/compatibilidad` de la fundamentación. Implementado: backend 6.1 |
+| Fase 4: compatibilidad y "lo que te falta" (semana 5) | **Acordado** (2026-11-16, PR #27). Precisa `GET /api/vacantes/{id}/compatibilidad` de la fundamentación. Implementado: backend 6.1 (PR #28) y pantalla de detalle |
 
 Cuando el backend apruebe una sección, se cambia su estado a **Acordado** y cualquier cambio posterior se hace con un pull request que toque este archivo.
 

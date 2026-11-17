@@ -1,5 +1,5 @@
 import { peticion, usarMocks } from './cliente'
-import { buscarVacantesMock } from './mocks/busqueda'
+import { buscarVacantesMock, obtenerCompatibilidadMock } from './mocks/busqueda'
 import {
   cerrarVacanteMock,
   editarVacanteMock,
@@ -8,6 +8,7 @@ import {
   publicarVacanteMock,
 } from './mocks/vacantes'
 import type {
+  CompatibilidadDetalle,
   EstadoVacante,
   FiltrosVacantes,
   PaginaDto,
@@ -17,7 +18,7 @@ import type {
   VacanteResumen,
 } from './tipos'
 
-// docs/contrato-api.md, secciones 3.2, 4.4 y 5.4
+// docs/contrato-api.md, secciones 3.2, 4.4, 5.4 y 6.1
 
 export function publicarVacante(datos: VacantePeticion): Promise<VacanteDetalle> {
   if (usarMocks) return publicarVacanteMock(datos)
@@ -61,4 +62,10 @@ export function buscarVacantes(
   return peticion<PaginaDto<VacanteResumen>>('/vacantes', {
     parametros: { ...filtros, page: pagina, size: tamano },
   })
+}
+
+/** HU-04: compatibilidad de hoy del candidato con la vacante, cada habilidad con si la cumple y su postulación. */
+export function obtenerCompatibilidad(vacanteId: string): Promise<CompatibilidadDetalle> {
+  if (usarMocks) return obtenerCompatibilidadMock(vacanteId)
+  return peticion<CompatibilidadDetalle>(`/vacantes/${vacanteId}/compatibilidad`)
 }
