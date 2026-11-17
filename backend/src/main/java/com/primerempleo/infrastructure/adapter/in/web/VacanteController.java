@@ -1,9 +1,14 @@
 package com.primerempleo.infrastructure.adapter.in.web;
 
+import com.primerempleo.application.port.in.BuscarVacantesUseCase;
 import com.primerempleo.application.port.in.ConsultaVacantesUseCase;
 import com.primerempleo.application.port.in.GestionVacantesUseCase;
 import com.primerempleo.domain.model.EstadoVacante;
+import com.primerempleo.domain.model.FiltroVacantes;
+import com.primerempleo.domain.model.Modalidad;
+import com.primerempleo.domain.model.OrdenVacantes;
 import com.primerempleo.domain.model.SolicitudPagina;
+import com.primerempleo.domain.model.TipoVacante;
 import com.primerempleo.infrastructure.security.UsuarioAutenticado;
 import jakarta.validation.Valid;
 import java.util.UUID;
@@ -22,8 +27,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Vacantes (docs/contrato-api.md, 3.2 y 4.4). Publicar, editar, cerrar y listar las propias: EMPRESA;
- * ver el detalle: cualquier usuario autenticado. La propiedad (regla 4) la valida el caso de uso.
+ * Vacantes (docs/contrato-api.md, 3.2, 4.4 y 5.4). Publicar, editar, cerrar y listar las propias: EMPRESA;
+ * buscar: CANDIDATO; ver el detalle: cualquier usuario autenticado. La propiedad (regla 4) la valida el caso de uso.
  */
 @RestController
 @RequestMapping("/api")
@@ -31,12 +36,14 @@ public class VacanteController {
 
     private final GestionVacantesUseCase gestionVacantes;
     private final ConsultaVacantesUseCase consultaVacantes;
+    private final BuscarVacantesUseCase buscarVacantes;
     private final VacanteWebMapper mapper;
 
     public VacanteController(GestionVacantesUseCase gestionVacantes, ConsultaVacantesUseCase consultaVacantes,
-                             VacanteWebMapper mapper) {
+                             BuscarVacantesUseCase buscarVacantes, VacanteWebMapper mapper) {
         this.gestionVacantes = gestionVacantes;
         this.consultaVacantes = consultaVacantes;
+        this.buscarVacantes = buscarVacantes;
         this.mapper = mapper;
     }
 
@@ -59,6 +66,25 @@ public class VacanteController {
     @PreAuthorize("hasRole('EMPRESA')")
     public VacanteDetalleDto cerrar(@AuthenticationPrincipal UsuarioAutenticado usuario, @PathVariable UUID id) {
         return mapper.aDetalle(gestionVacantes.cerrar(usuario.id(), id));
+    }
+
+    /**
+     * Solo CANDIDATO: una empresa no recorre las vacantes de otras (regla 4). Abiertas y vigentes, con la
+     * compatibilidad del candidato; {@code orden} es compatibilidad (por defecto) o fechaPublicacion.
+     */
+    @GetMapping("/vacantes")
+    @PreAuthorize("hasRole('CANDIDATO')")
+    public PaginaDto<VacanteResumenDto> buscar(
+            @AuthenticationPrincipal UsuarioAutenticado usuario,
+            @RequestParam(required = false) Modalidad modalidad,
+            @RequestParam(required = false) TipoVacante tipo,
+            @RequestParam(required = false) UUID habilidadId,
+            @RequestParam(required = false) String ciudad,
+            @RequestParam(defaultValue = "compatibilidad") String orden,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "" + SolicitudPagina.TAMANO_POR_DEFECTO) int size) {
+        return PaginaDto.de(buscarVacantes.buscar(usuario.id(), new FiltroVacantes(modalidad, tipo, habilidadId, ciudad),
+                OrdenVacantes.desde(orden), new SolicitudPagina(page, size)), mapper::aResumenParaCandidato);
     }
 
     @GetMapping("/vacantes/{id}")

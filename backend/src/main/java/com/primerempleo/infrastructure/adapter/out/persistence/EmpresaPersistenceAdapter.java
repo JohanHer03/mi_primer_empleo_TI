@@ -6,6 +6,8 @@ import com.primerempleo.domain.model.Empresa;
 import com.primerempleo.domain.model.EmpresaConCuenta;
 import com.primerempleo.domain.model.Pagina;
 import com.primerempleo.domain.model.SolicitudPagina;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -44,6 +46,11 @@ public class EmpresaPersistenceAdapter implements EmpresaRepositoryPort {
     @Override
     public Optional<EmpresaConCuenta> buscarConCuentaPorId(UUID empresaId) {
         return repositorio.buscarConCorreoPorId(empresaId).map(this::aEmpresaConCuenta);
+    }
+
+    @Override
+    public List<Empresa> buscarPorIds(Collection<UUID> ids) {
+        return repositorio.findAllById(ids).stream().map(mapper::aDominio).toList();
     }
 
     @Override

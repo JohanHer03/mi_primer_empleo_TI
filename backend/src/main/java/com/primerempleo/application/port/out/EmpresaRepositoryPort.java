@@ -4,6 +4,8 @@ import com.primerempleo.domain.model.Empresa;
 import com.primerempleo.domain.model.EmpresaConCuenta;
 import com.primerempleo.domain.model.Pagina;
 import com.primerempleo.domain.model.SolicitudPagina;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,6 +24,9 @@ public interface EmpresaRepositoryPort {
     Empresa actualizar(Empresa empresa);
 
     Optional<EmpresaConCuenta> buscarConCuentaPorId(UUID empresaId);
+
+    /** Las empresas con esos ids que existan. */
+    List<Empresa> buscarPorIds(Collection<UUID> ids);
 
     Optional<EmpresaConCuenta> buscarConCuentaPorUsuarioId(UUID usuarioId);
 

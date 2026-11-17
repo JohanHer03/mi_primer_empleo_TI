@@ -4,6 +4,7 @@ import com.primerempleo.domain.model.DatosVacante;
 import com.primerempleo.domain.model.HabilidadDeVacante;
 import com.primerempleo.domain.model.VacanteDeEmpresaResumen;
 import com.primerempleo.domain.model.VacanteDetalle;
+import com.primerempleo.domain.model.VacanteResumen;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -24,4 +25,8 @@ public interface VacanteWebMapper {
     VacanteDetalleDto.HabilidadRequeridaDto aHabilidad(HabilidadDeVacante habilidad);
 
     VacanteDeEmpresaResumenDto aResumen(VacanteDeEmpresaResumen resumen);
+
+    @Mapping(target = ".", source = "vacante")
+    @Mapping(target = "empresa", source = "empresa")
+    VacanteResumenDto aResumenParaCandidato(VacanteResumen resumen);
 }

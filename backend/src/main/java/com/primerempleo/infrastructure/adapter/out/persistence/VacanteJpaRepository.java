@@ -7,13 +7,16 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 /**
+ * La búsqueda del candidato, con varios filtros opcionales, usa {@link VacanteEspecificaciones}.
  * El listado con y sin filtro de estado son dos métodos: un parámetro null en "is null" falla en PostgreSQL.
  */
-public interface VacanteJpaRepository extends JpaRepository<VacanteEntity, UUID> {
+public interface VacanteJpaRepository extends JpaRepository<VacanteEntity, UUID>,
+        JpaSpecificationExecutor<VacanteEntity> {
 
     Page<VacanteEntity> findByEmpresaId(UUID empresaId, Pageable pagina);
 
