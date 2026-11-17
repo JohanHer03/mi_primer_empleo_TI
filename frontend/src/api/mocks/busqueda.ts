@@ -1,11 +1,12 @@
-import type { FiltrosVacantes, PaginaDto, VacanteResumen } from '../tipos'
+import { ErrorApi } from '../cliente'
+import type { CompatibilidadDetalle, FiltrosVacantes, NivelHabilidad, PaginaDto, VacanteResumen } from '../tipos'
 import { perfilCandidatoActualMock } from './candidatos'
 import { calcularCompatibilidadMock, recibePostulacionesMock } from './compatibilidad'
-import { idsVacantesPostuladasMock } from './postulaciones'
+import { idsVacantesPostuladasMock, postulacionDeMock } from './postulaciones'
 import { esperar } from './utilidades'
 import { vacantesGuardadasMock } from './vacantes'
 
-// Simulación de GET /api/vacantes (contrato 5.4): solo CANDIDATO (403 para los demás), vacantes abiertas
+// Simulación de GET /api/vacantes (contrato 5.4) y de GET /api/vacantes/{id}/compatibilidad (6.1): solo CANDIDATO (403 para los demás), vacantes abiertas
 // y vigentes, compatibilidad calculada al consultar y orden con desempate por la más reciente.
 
 const normalizar = (texto: string) => texto.trim().toLowerCase()
@@ -57,5 +58,31 @@ export async function buscarVacantesMock(
     tamano,
     totalElementos: encontradas.length,
     totalPaginas: Math.ceil(encontradas.length / tamano),
+  }
+}
+
+const VALOR_NIVEL: Record<NivelHabilidad, number> = { BASICO: 1, INTERMEDIO: 2, AVANZADO: 3 }
+
+/** También para vacantes cerradas o vencidas (se llega desde "Mis postulaciones"). */
+export async function obtenerCompatibilidadMock(vacanteId: string): Promise<CompatibilidadDetalle> {
+  await esperar()
+  const candidato = perfilCandidatoActualMock()
+  const vacante = vacantesGuardadasMock().find((v) => v.id === vacanteId)
+  if (!vacante) throw new ErrorApi(404, 'La vacante no existe')
+  return {
+    vacanteId,
+    porcentaje: calcularCompatibilidadMock(vacante.habilidades, candidato.habilidades),
+    habilidades: vacante.habilidades
+      .map((requerida) => {
+        const nivelCandidato = candidato.habilidades.find((h) => h.habilidadId === requerida.habilidadId)?.nivel ?? null
+        return {
+          ...requerida,
+          nivelCandidato,
+          cumple: nivelCandidato !== null && VALOR_NIVEL[nivelCandidato] >= VALOR_NIVEL[requerida.nivelRequerido],
+        }
+      })
+      // Orden del contrato: obligatorias primero y luego por nombre
+      .sort((a, b) => Number(b.obligatoria) - Number(a.obligatoria) || a.nombre.localeCompare(b.nombre, 'es')),
+    postulacion: postulacionDeMock(candidato.id, vacanteId),
   }
 }

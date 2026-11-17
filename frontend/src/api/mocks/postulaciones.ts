@@ -1,5 +1,11 @@
 import { ErrorApi } from '../cliente'
-import type { EstadoPostulacion, PaginaDto, PostulacionDeCandidato, VacanteDetalle } from '../tipos'
+import type {
+  CompatibilidadDetalle,
+  EstadoPostulacion,
+  PaginaDto,
+  PostulacionDeCandidato,
+  VacanteDetalle,
+} from '../tipos'
 import { ID_CANDIDATO_DEMO, perfilCandidatoActualMock } from './candidatos'
 import { calcularCompatibilidadMock, recibePostulacionesMock } from './compatibilidad'
 import { esperar, guardar, leerGuardado } from './utilidades'
@@ -41,6 +47,14 @@ function postulacionesDemo(): PostulacionGuardada[] {
 /** Ids de las vacantes a las que ya se postuló el candidato (`postulado` de la búsqueda). */
 export function idsVacantesPostuladasMock(candidatoId: string): Set<string> {
   return new Set(leerPostulaciones().filter((p) => p.candidatoId === candidatoId).map((p) => p.vacanteId))
+}
+
+/** La postulación del candidato a la vacante, con la compatibilidad guardada, o null (contrato 6.1). */
+export function postulacionDeMock(candidatoId: string, vacanteId: string): CompatibilidadDetalle['postulacion'] {
+  const guardada = leerPostulaciones().find((p) => p.candidatoId === candidatoId && p.vacanteId === vacanteId)
+  if (!guardada) return null
+  const { id, fecha, estado, compatibilidad } = guardada
+  return { id, fecha, estado, compatibilidad }
 }
 
 function aDto(postulacion: PostulacionGuardada, vacante: VacanteDetalle): PostulacionDeCandidato {

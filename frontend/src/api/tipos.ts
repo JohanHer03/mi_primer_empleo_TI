@@ -235,3 +235,27 @@ export interface PostulacionDeCandidato {
     fechaCierre: string
   }
 }
+
+// Fase 4: compatibilidad y "lo que te falta" (docs/contrato-api.md, sección 6)
+
+export interface HabilidadEvaluada {
+  habilidadId: string
+  nombre: string
+  categoria: CategoriaHabilidad
+  nivelRequerido: NivelHabilidad
+  obligatoria: boolean
+  /** null si el candidato no la tiene. */
+  nivelCandidato: NivelHabilidad | null
+  /** false: es parte de "lo que te falta". */
+  cumple: boolean
+}
+
+export interface CompatibilidadDetalle {
+  vacanteId: string
+  /** La de hoy, de 0 a 100 con un decimal; no se guarda. */
+  porcentaje: number
+  /** Todas las de la vacante: primero las obligatorias y luego por nombre. */
+  habilidades: HabilidadEvaluada[]
+  /** null si no se ha postulado; si sí, con la compatibilidad guardada al postularse (regla 6). */
+  postulacion: { id: string; fecha: string; estado: EstadoPostulacion; compatibilidad: number } | null
+}
