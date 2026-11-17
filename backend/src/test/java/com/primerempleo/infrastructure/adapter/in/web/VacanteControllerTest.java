@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.primerempleo.application.port.in.BuscarVacantesUseCase;
 import com.primerempleo.application.port.in.ConsultaVacantesUseCase;
 import com.primerempleo.application.port.in.GestionVacantesUseCase;
 import com.primerempleo.domain.exception.AccesoDenegadoException;
@@ -23,9 +24,11 @@ import com.primerempleo.domain.model.CategoriaHabilidad;
 import com.primerempleo.domain.model.DatosVacante;
 import com.primerempleo.domain.model.Empresa;
 import com.primerempleo.domain.model.EstadoVacante;
+import com.primerempleo.domain.model.FiltroVacantes;
 import com.primerempleo.domain.model.Habilidad;
 import com.primerempleo.domain.model.Modalidad;
 import com.primerempleo.domain.model.NivelHabilidad;
+import com.primerempleo.domain.model.OrdenVacantes;
 import com.primerempleo.domain.model.Pagina;
 import com.primerempleo.domain.model.Rol;
 import com.primerempleo.domain.model.SolicitudPagina;
@@ -34,9 +37,11 @@ import com.primerempleo.domain.model.Vacante;
 import com.primerempleo.domain.model.VacanteDeEmpresaResumen;
 import com.primerempleo.domain.model.VacanteDetalle;
 import com.primerempleo.domain.model.VacanteHabilidad;
+import com.primerempleo.domain.model.VacanteResumen;
 import com.primerempleo.infrastructure.config.CorsConfig;
 import com.primerempleo.infrastructure.security.JwtService;
 import com.primerempleo.infrastructure.security.SecurityConfig;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
@@ -54,7 +59,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @WebMvcTest(VacanteController.class)
 @Import({SecurityConfig.class, CorsConfig.class, JwtService.class, VacanteWebMapperImpl.class})
-@MockitoBean(types = {GestionVacantesUseCase.class, ConsultaVacantesUseCase.class})
+@MockitoBean(types = {GestionVacantesUseCase.class, ConsultaVacantesUseCase.class, BuscarVacantesUseCase.class})
 @TestPropertySource(properties = {
         "app.cors.origins=http://localhost:5173",
         "app.jwt.secret=secreto-de-pruebas-con-mas-de-32-bytes-de-largo",
@@ -87,14 +92,16 @@ class VacanteControllerTest {
     private final JwtService jwtService;
     private final GestionVacantesUseCase gestionVacantes;
     private final ConsultaVacantesUseCase consultaVacantes;
+    private final BuscarVacantesUseCase buscarVacantes;
 
     @Autowired
     VacanteControllerTest(MockMvc mockMvc, JwtService jwtService, GestionVacantesUseCase gestionVacantes,
-                          ConsultaVacantesUseCase consultaVacantes) {
+                          ConsultaVacantesUseCase consultaVacantes, BuscarVacantesUseCase buscarVacantes) {
         this.mockMvc = mockMvc;
         this.jwtService = jwtService;
         this.gestionVacantes = gestionVacantes;
         this.consultaVacantes = consultaVacantes;
+        this.buscarVacantes = buscarVacantes;
     }
 
     @Test
@@ -264,6 +271,64 @@ class VacanteControllerTest {
         mockMvc.perform(get("/api/empresas/me/vacantes")
                         .header(HttpHeaders.AUTHORIZATION, token(Rol.CANDIDATO, UUID.randomUUID())))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void deberiaBuscarConLosFiltrosYElOrdenPedidos() throws Exception {
+        UUID candidato = UUID.randomUUID();
+        VacanteDetalle detalle = detalle(false);
+        VacanteResumen resumen = new VacanteResumen(detalle.vacante(), detalle.empresa(), new BigDecimal("60.0"), true);
+        when(buscarVacantes.buscar(any(), any(), any(), any())).thenReturn(new Pagina<>(List.of(resumen), 0, 10, 1, 1));
+
+        mockMvc.perform(get("/api/vacantes").header(HttpHeaders.AUTHORIZATION, token(Rol.CANDIDATO, candidato))
+                        .param("modalidad", "HIBRIDA").param("tipo", "JUNIOR").param("habilidadId", JAVA.id().toString())
+                        .param("ciudad", " Medellín ").param("orden", "fechaPublicacion"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contenido[0].titulo").value("Desarrollador Java junior"))
+                .andExpect(jsonPath("$.contenido[0].empresa.razonSocial").value("Software Medellín S.A.S."))
+                .andExpect(jsonPath("$.contenido[0].compatibilidad").value(60.0))
+                .andExpect(jsonPath("$.contenido[0].postulado").value(true))
+                .andExpect(jsonPath("$.contenido[0].fechaPublicacion").value("2026-11-04T15:00:00Z"))
+                .andExpect(jsonPath("$.contenido[0].habilidades").doesNotExist());
+
+        verify(buscarVacantes).buscar(candidato,
+                new FiltroVacantes(Modalidad.HIBRIDA, TipoVacante.JUNIOR, JAVA.id(), "Medellín"),
+                OrdenVacantes.FECHA_PUBLICACION, new SolicitudPagina(0, 10));
+    }
+
+    @Test
+    void deberiaBuscarPorCompatibilidadSiNoSePideOrden() throws Exception {
+        UUID candidato = UUID.randomUUID();
+        when(buscarVacantes.buscar(any(), any(), any(), any())).thenReturn(new Pagina<>(List.of(), 0, 10, 0, 0));
+
+        mockMvc.perform(get("/api/vacantes").header(HttpHeaders.AUTHORIZATION, token(Rol.CANDIDATO, candidato)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.contenido").isEmpty());
+        verify(buscarVacantes).buscar(candidato, FiltroVacantes.sinFiltros(), OrdenVacantes.COMPATIBILIDAD,
+                new SolicitudPagina(0, 10));
+    }
+
+    @Test
+    void deberiaResponder400ConUnOrdenDesconocido() throws Exception {
+        mockMvc.perform(get("/api/vacantes").param("orden", "salario")
+                        .header(HttpHeaders.AUTHORIZATION, token(Rol.CANDIDATO, UUID.randomUUID())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensaje").value("orden: debe ser compatibilidad o fechaPublicacion"));
+    }
+
+    @Test
+    void deberiaResponder400ConUnaModalidadDesconocida() throws Exception {
+        mockMvc.perform(get("/api/vacantes").param("modalidad", "VIRTUAL")
+                        .header(HttpHeaders.AUTHORIZATION, token(Rol.CANDIDATO, UUID.randomUUID())))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.mensaje").value("Valor inválido para el parámetro modalidad"));
+    }
+
+    @Test
+    void deberiaResponder403SiUnaEmpresaBuscaVacantes() throws Exception {
+        mockMvc.perform(get("/api/vacantes").header(HttpHeaders.AUTHORIZATION, token(Rol.EMPRESA, USUARIO_EMPRESA)))
+                .andExpect(status().isForbidden());
+        verify(buscarVacantes, never()).buscar(any(), any(), any(), any());
     }
 
     private String token(Rol rol, UUID usuarioId) {

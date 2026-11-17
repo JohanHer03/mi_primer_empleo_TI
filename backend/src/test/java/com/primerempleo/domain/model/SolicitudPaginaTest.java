@@ -33,6 +33,27 @@ class SolicitudPaginaTest {
     }
 
     @Test
+    void deberiaPaginarUnaListaEnMemoria() {
+        List<Integer> siete = List.of(1, 2, 3, 4, 5, 6, 7);
+
+        Pagina<Integer> ultima = Pagina.de(siete, new SolicitudPagina(2, 3));
+
+        assertThat(ultima.contenido()).containsExactly(7);
+        assertThat(ultima.totalElementos()).isEqualTo(7);
+        assertThat(ultima.totalPaginas()).isEqualTo(3);
+        assertThat(Pagina.de(siete, new SolicitudPagina(5, 3)).contenido()).isEmpty();
+        assertThat(Pagina.de(List.of(), new SolicitudPagina(0, 10)).totalPaginas()).isZero();
+    }
+
+    @Test
+    void deberiaRechazarUnOrdenDeVacantesDesconocido() {
+        assertThat(OrdenVacantes.desde("fechaPublicacion")).isEqualTo(OrdenVacantes.FECHA_PUBLICACION);
+        assertThatThrownBy(() -> OrdenVacantes.desde("salario"))
+                .isInstanceOf(DatosInvalidosException.class)
+                .hasMessage("orden: debe ser compatibilidad o fechaPublicacion");
+    }
+
+    @Test
     void deberiaTransformarElContenidoConservandoLosTotales() {
         Pagina<Integer> pagina = new Pagina<>(List.of(1, 2), 1, 2, 5, 3);
 

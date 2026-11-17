@@ -2579,6 +2579,325 @@
       ]
     },
     {
+      "name": "Búsqueda",
+      "description": "Búsqueda de vacantes del candidato (5.4). La empresa de Autenticación publica una práctica remota con Java (intermedio, obligatoria) y Git (básico, deseable); el candidato tiene Java básico y Git intermedio, así que su compatibilidad es (0,5 × 2 + 1 × 1) / 3 = 66,7.",
+      "item": [
+        {
+          "name": "Publicar vacante para la búsqueda (201)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Práctica de desarrollo backend\",\n  \"descripcion\": \"Apoyarás el desarrollo de servicios con Java para una plataforma de pagos.\",\n  \"tipo\": \"PRACTICA\",\n  \"modalidad\": \"REMOTA\",\n  \"ciudad\": \"Medellín\",\n  \"salarioMin\": 1423500,\n  \"salarioMax\": null,\n  \"fechaCierre\": \"{{fechaCierreVacante}}\",\n  \"habilidades\": [\n    {\n      \"habilidadId\": \"{{habilidadJavaId}}\",\n      \"nivelRequerido\": \"INTERMEDIO\",\n      \"obligatoria\": true\n    },\n    {\n      \"habilidadId\": \"{{habilidadGitId}}\",\n      \"nivelRequerido\": \"BASICO\",\n      \"obligatoria\": false\n    }\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const enColombia = new Date(Date.now() - 5 * 3600 * 1000);",
+                  "enColombia.setUTCDate(enColombia.getUTCDate() + 30);",
+                  "pm.collectionVariables.set(\"fechaCierreVacante\", enColombia.toISOString().slice(0, 10));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201 Created\", () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set(\"vacanteBusquedaId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar con filtros (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes?modalidad=REMOTA&tipo=PRACTICA&habilidadId={{habilidadJavaId}}&ciudad= medellín &size=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ],
+              "query": [
+                {
+                  "key": "modalidad",
+                  "value": "REMOTA"
+                },
+                {
+                  "key": "tipo",
+                  "value": "PRACTICA"
+                },
+                {
+                  "key": "habilidadId",
+                  "value": "{{habilidadJavaId}}"
+                },
+                {
+                  "key": "ciudad",
+                  "value": " medellín "
+                },
+                {
+                  "key": "size",
+                  "value": "50"
+                }
+              ]
+            },
+            "description": "Usa el token del candidato de Autenticación, con las habilidades de la carpeta Candidatos."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const contenido = pm.response.json().contenido;",
+                  "const publicada = contenido.find(v => v.id === pm.collectionVariables.get(\"vacanteBusquedaId\"));",
+                  "pm.test(\"Incluye la vacante publicada\", () => pm.expect(publicada).to.be.an(\"object\"));",
+                  "pm.test(\"Compatibilidad 66.7\", () => pm.expect(publicada.compatibilidad).to.eql(66.7));",
+                  "pm.test(\"Aún no se ha postulado\", () => pm.expect(publicada.postulado).to.eql(false));",
+                  "pm.test(\"Todas cumplen los filtros\", () => contenido.forEach(v => {",
+                  "    pm.expect(v.modalidad).to.eql(\"REMOTA\");",
+                  "    pm.expect(v.tipo).to.eql(\"PRACTICA\");",
+                  "}));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar por compatibilidad (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes?size=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ],
+              "query": [
+                {
+                  "key": "size",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const contenido = pm.response.json().contenido;",
+                  "pm.test(\"De mayor a menor compatibilidad\", () => contenido.slice(1).forEach((v, i) =>",
+                  "    pm.expect(v.compatibilidad).to.be.at.most(contenido[i].compatibilidad)));",
+                  "pm.test(\"Sin la vacante cerrada de la carpeta Vacantes\", () => pm.expect(",
+                  "    contenido.some(v => v.id === pm.collectionVariables.get(\"vacanteId\"))).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar por fecha de publicación (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes?orden=fechaPublicacion&size=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ],
+              "query": [
+                {
+                  "key": "orden",
+                  "value": "fechaPublicacion"
+                },
+                {
+                  "key": "size",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const contenido = pm.response.json().contenido;",
+                  "pm.test(\"La más reciente primero\", () => contenido.slice(1).forEach((v, i) =>",
+                  "    pm.expect(v.fechaPublicacion <= contenido[i].fechaPublicacion).to.eql(true)));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar con orden desconocido (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes?orden=salario",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ],
+              "query": [
+                {
+                  "key": "orden",
+                  "value": "salario"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: orden: debe ser compatibilidad o fechaPublicacion\", () => pm.expect(pm.response.json().mensaje).to.eql(\"orden: debe ser compatibilidad o fechaPublicacion\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar con modalidad desconocida (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes?modalidad=VIRTUAL",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ],
+              "query": [
+                {
+                  "key": "modalidad",
+                  "value": "VIRTUAL"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: Valor inválido para el parámetro modalidad\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Valor inválido para el parámetro modalidad\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar vacantes como empresa (403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ]
+            },
+            "description": "Regla 4: una empresa no recorre las vacantes de otras.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Seguridad",
       "item": [
         {
@@ -2679,6 +2998,10 @@
     },
     {
       "key": "vacanteId",
+      "value": ""
+    },
+    {
+      "key": "vacanteBusquedaId",
       "value": ""
     }
   ]

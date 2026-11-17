@@ -3,10 +3,12 @@ package com.primerempleo.infrastructure.adapter.out.persistence;
 import com.primerempleo.application.port.out.VacanteRepositoryPort;
 import com.primerempleo.domain.exception.RecursoNoEncontradoException;
 import com.primerempleo.domain.model.EstadoVacante;
+import com.primerempleo.domain.model.FiltroVacantes;
 import com.primerempleo.domain.model.Pagina;
 import com.primerempleo.domain.model.SolicitudPagina;
 import com.primerempleo.domain.model.Vacante;
 import com.primerempleo.domain.model.VacanteDeEmpresaResumen;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +49,13 @@ public class VacantePersistenceAdapter implements VacanteRepositoryPort {
     @Override
     public Optional<Vacante> buscarPorId(UUID vacanteId) {
         return repositorio.findById(vacanteId).map(mapper::aDominio);
+    }
+
+    @Override
+    public List<Vacante> buscarAbiertas(FiltroVacantes filtro, LocalDate hoy) {
+        return repositorio.findAll(VacanteEspecificaciones.abiertasCon(filtro, hoy)).stream()
+                .map(mapper::aDominio)
+                .toList();
     }
 
     @Override
