@@ -3,6 +3,7 @@ package com.primerempleo.infrastructure.adapter.out.persistence;
 import com.primerempleo.domain.model.Candidato;
 import com.primerempleo.domain.model.Empresa;
 import com.primerempleo.domain.model.Habilidad;
+import com.primerempleo.domain.model.Postulacion;
 import com.primerempleo.domain.model.Usuario;
 import com.primerempleo.domain.model.Vacante;
 import com.primerempleo.domain.model.VacanteDeEmpresaResumen;
@@ -52,6 +53,10 @@ public interface PersistenciaMapper {
     @Mapping(target = "empresaId", ignore = true)
     @Mapping(target = "fechaPublicacion", ignore = true)
     void copiar(Vacante vacante, @MappingTarget VacanteEntity entidad);
+
+    PostulacionEntity aEntidad(Postulacion postulacion);
+
+    Postulacion aDominio(PostulacionEntity entidad);
 
     /** No toca la colección de habilidades, así el listado no las carga. */
     VacanteDeEmpresaResumen aResumen(VacanteEntity entidad, long totalPostulaciones);

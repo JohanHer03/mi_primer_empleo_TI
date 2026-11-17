@@ -74,6 +74,14 @@ public record Vacante(
                 EstadoVacante.CERRADA, fechaPublicacion, fechaCierre, habilidades);
     }
 
+    /**
+     * Regla 2: solo recibe postulaciones si está ABIERTA y su fecha de cierre no ha pasado (hora de Colombia).
+     * Una abierta y vencida no se cierra sola (contrato 4.4), pero ya no recibe postulaciones.
+     */
+    public boolean recibePostulaciones(Instant ahora) {
+        return !estaCerrada() && !fechaCierre.isBefore(LocalDate.ofInstant(ahora, ZONA_COLOMBIA));
+    }
+
     public boolean estaCerrada() {
         return estado == EstadoVacante.CERRADA;
     }

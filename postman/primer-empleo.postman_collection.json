@@ -2898,6 +2898,382 @@
       ]
     },
     {
+      "name": "Postulaciones",
+      "description": "Postularse y mis postulaciones (5.5 y 5.6). El candidato de Autenticación se postula a la práctica que publicó la carpeta Búsqueda (compatibilidad 66.7) y a la vacante cerrada de la carpeta Vacantes.",
+      "item": [
+        {
+          "name": "Postularse (201)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteBusquedaId}}/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteBusquedaId}}",
+                "postulaciones"
+              ]
+            },
+            "description": "Usa el token del candidato de Autenticación."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 201 Created\", () => pm.response.to.have.status(201));",
+                  "const postulacion = pm.response.json();",
+                  "pm.test(\"Queda ENVIADA\", () => pm.expect(postulacion.estado).to.eql(\"ENVIADA\"));",
+                  "pm.test(\"Guarda la compatibilidad del momento\", () => pm.expect(postulacion.compatibilidad).to.eql(66.7));",
+                  "pm.test(\"Trae la vacante y su empresa\", () => pm.expect(postulacion.vacante.id).to.eql(pm.collectionVariables.get(\"vacanteBusquedaId\")));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Postularse otra vez (409)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteBusquedaId}}/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteBusquedaId}}",
+                "postulaciones"
+              ]
+            },
+            "description": "Regla 1: un candidato no se postula dos veces a la misma vacante."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Mensaje: Ya te postulaste a esta vacante\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Ya te postulaste a esta vacante\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Postularse a una vacante cerrada (409)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteId}}/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteId}}",
+                "postulaciones"
+              ]
+            },
+            "description": "Regla 2: la vacante de la carpeta Vacantes quedó cerrada."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Mensaje: Esta vacante ya no recibe postulaciones\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Esta vacante ya no recibe postulaciones\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Postularse a una vacante inexistente (404)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/00000000-0000-0000-0000-000000000000/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "00000000-0000-0000-0000-000000000000",
+                "postulaciones"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Mensaje: La vacante no existe\", () => pm.expect(pm.response.json().mensaje).to.eql(\"La vacante no existe\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Postularse como empresa (403)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteBusquedaId}}/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteBusquedaId}}",
+                "postulaciones"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mis postulaciones (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "me"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const pagina = pm.response.json();",
+                  "pm.test(\"Una sola postulación\", () => pm.expect(pagina.totalElementos).to.eql(1));",
+                  "pm.test(\"Con su vacante\", () => pm.expect(pagina.contenido[0].vacante.titulo).to.eql(\"Práctica de desarrollo backend\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mis postulaciones en revisión (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/me?estado=EN_REVISION",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "me"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "EN_REVISION"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Ninguna todavía\", () => pm.expect(pm.response.json().contenido).to.eql([]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mis postulaciones con estado desconocido (400)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/me?estado=APROBADA",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "me"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "APROBADA"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: Valor inválido para el parámetro estado\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Valor inválido para el parámetro estado\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Buscar marca la vacante como postulada (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes?habilidadId={{habilidadJavaId}}&modalidad=REMOTA&size=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes"
+              ],
+              "query": [
+                {
+                  "key": "habilidadId",
+                  "value": "{{habilidadJavaId}}"
+                },
+                {
+                  "key": "modalidad",
+                  "value": "REMOTA"
+                },
+                {
+                  "key": "size",
+                  "value": "50"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const vacante = pm.response.json().contenido.find(v => v.id === pm.collectionVariables.get(\"vacanteBusquedaId\"));",
+                  "pm.test(\"postulado: true\", () => pm.expect(vacante.postulado).to.eql(true));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "La empresa ve una postulación (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/empresas/me/vacantes?estado=ABIERTA&size=50",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "empresas",
+                "me",
+                "vacantes"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "ABIERTA"
+                },
+                {
+                  "key": "size",
+                  "value": "50"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const vacante = pm.response.json().contenido.find(v => v.id === pm.collectionVariables.get(\"vacanteBusquedaId\"));",
+                  "pm.test(\"totalPostulaciones: 1\", () => pm.expect(vacante.totalPostulaciones).to.eql(1));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Seguridad",
       "item": [
         {

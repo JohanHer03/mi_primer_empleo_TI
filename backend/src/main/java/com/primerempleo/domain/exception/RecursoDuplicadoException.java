@@ -19,6 +19,11 @@ public class RecursoDuplicadoException extends RuntimeException {
         return new RecursoDuplicadoException("Ya existe una empresa registrada con ese NIT");
     }
 
+    /** Regla 1: un candidato no se postula dos veces a la misma vacante (docs/contrato-api.md, 5.5). */
+    public static RecursoDuplicadoException postulacionRepetida() {
+        return new RecursoDuplicadoException("Ya te postulaste a esta vacante");
+    }
+
     /** Habilidad ya en el catálogo, sin distinguir mayúsculas (docs/contrato-api.md, 4.1). */
     public static RecursoDuplicadoException habilidadRepetida() {
         return new RecursoDuplicadoException("Ya existe una habilidad con ese nombre");

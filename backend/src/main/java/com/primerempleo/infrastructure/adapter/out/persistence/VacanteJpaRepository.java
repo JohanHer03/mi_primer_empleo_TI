@@ -22,11 +22,7 @@ public interface VacanteJpaRepository extends JpaRepository<VacanteEntity, UUID>
 
     Page<VacanteEntity> findByEmpresaIdAndEstado(UUID empresaId, EstadoVacante estado, Pageable pagina);
 
-    /**
-     * Pares [vacante_id, total] de las vacantes que tienen postulaciones. Es SQL nativo porque las postulaciones
-     * todavía no tienen entidad JPA (semana 4); con ella puede pasar a JPQL.
-     */
-    @Query(value = "select p.vacante_id, count(*) from postulaciones p where p.vacante_id in (:ids) group by p.vacante_id",
-            nativeQuery = true)
+    /** Pares [vacanteId, total] de las vacantes que tienen postulaciones. */
+    @Query("select p.vacanteId, count(p) from PostulacionEntity p where p.vacanteId in :ids group by p.vacanteId")
     List<Object[]> contarPostulaciones(@Param("ids") Collection<UUID> ids);
 }
