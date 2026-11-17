@@ -5,6 +5,7 @@ import com.primerempleo.domain.model.Pagina;
 import com.primerempleo.domain.model.Postulacion;
 import com.primerempleo.domain.model.PostulacionDeCandidato;
 import com.primerempleo.domain.model.SolicitudPagina;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -14,6 +15,9 @@ public interface PostulacionRepositoryPort {
     Set<UUID> idsVacantesPostuladas(UUID candidatoId);
 
     boolean existe(UUID candidatoId, UUID vacanteId);
+
+    /** La postulación del candidato a la vacante, si existe (a lo sumo una, regla 1). */
+    Optional<Postulacion> buscar(UUID candidatoId, UUID vacanteId);
 
     /** Inserta una postulación nueva. Si ya existía (dos peticiones a la vez), la base la rechaza con su restricción. */
     Postulacion crear(Postulacion postulacion);

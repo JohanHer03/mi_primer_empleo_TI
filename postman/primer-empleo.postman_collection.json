@@ -3274,6 +3274,170 @@
       ]
     },
     {
+      "name": "Compatibilidad",
+      "description": "Compatibilidad y \"lo que te falta\" (6.1, HU-04). El candidato de Autenticación tiene Java básico y Git intermedio (carpeta Candidatos); la práctica de la carpeta Búsqueda pide Java intermedio (obligatoria) y Git básico (deseable): 2 / 3 = 66.7, le falta Java.",
+      "item": [
+        {
+          "name": "Mi compatibilidad con la práctica (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteBusquedaId}}/compatibilidad",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteBusquedaId}}",
+                "compatibilidad"
+              ]
+            },
+            "description": "Usa el token del candidato de Autenticación."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const detalle = pm.response.json();",
+                  "pm.test(\"Porcentaje 66.7\", () => pm.expect(detalle.porcentaje).to.eql(66.7));",
+                  "pm.test(\"Java obligatoria primero, sin cumplir (tiene básico)\", () => {",
+                  "    const java = detalle.habilidades[0];",
+                  "    pm.expect(java.habilidadId).to.eql(pm.collectionVariables.get(\"habilidadJavaId\"));",
+                  "    pm.expect(java.obligatoria).to.eql(true);",
+                  "    pm.expect(java.nivelRequerido).to.eql(\"INTERMEDIO\");",
+                  "    pm.expect(java.nivelCandidato).to.eql(\"BASICO\");",
+                  "    pm.expect(java.cumple).to.eql(false);",
+                  "});",
+                  "pm.test(\"Git cumplida\", () => {",
+                  "    const git = detalle.habilidades[1];",
+                  "    pm.expect(git.habilidadId).to.eql(pm.collectionVariables.get(\"habilidadGitId\"));",
+                  "    pm.expect(git.cumple).to.eql(true);",
+                  "});",
+                  "pm.test(\"Trae la postulación con la compatibilidad guardada\", () => {",
+                  "    pm.expect(detalle.postulacion.estado).to.eql(\"ENVIADA\");",
+                  "    pm.expect(detalle.postulacion.compatibilidad).to.eql(66.7);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mi compatibilidad con una vacante cerrada (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteId}}/compatibilidad",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteId}}",
+                "compatibilidad"
+              ]
+            },
+            "description": "La vacante de la carpeta Vacantes quedó cerrada: igual responde (se llega desde Mis postulaciones)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const detalle = pm.response.json();",
+                  "pm.test(\"Con porcentaje y habilidades\", () => {",
+                  "    pm.expect(detalle.porcentaje).to.be.a(\"number\");",
+                  "    pm.expect(detalle.habilidades).to.not.be.empty;",
+                  "});",
+                  "pm.test(\"Sin postulación (el 409 la rechazó)\", () => pm.expect(detalle.postulacion).to.eql(null));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Compatibilidad con una vacante inexistente (404)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/00000000-0000-0000-0000-000000000000/compatibilidad",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "00000000-0000-0000-0000-000000000000",
+                "compatibilidad"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Mensaje: La vacante no existe\", () => pm.expect(pm.response.json().mensaje).to.eql(\"La vacante no existe\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Compatibilidad como empresa (403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteBusquedaId}}/compatibilidad",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteBusquedaId}}",
+                "compatibilidad"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Seguridad",
       "item": [
         {

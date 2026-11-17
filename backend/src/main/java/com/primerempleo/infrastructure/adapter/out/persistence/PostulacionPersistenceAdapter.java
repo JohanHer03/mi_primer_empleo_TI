@@ -8,6 +8,7 @@ import com.primerempleo.domain.model.PostulacionDeCandidato;
 import com.primerempleo.domain.model.PostulacionDeCandidato.VacantePostulada;
 import com.primerempleo.domain.model.SolicitudPagina;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -33,6 +34,11 @@ public class PostulacionPersistenceAdapter implements PostulacionRepositoryPort 
     @Override
     public boolean existe(UUID candidatoId, UUID vacanteId) {
         return repositorio.existsByCandidatoIdAndVacanteId(candidatoId, vacanteId);
+    }
+
+    @Override
+    public Optional<Postulacion> buscar(UUID candidatoId, UUID vacanteId) {
+        return repositorio.findByCandidatoIdAndVacanteId(candidatoId, vacanteId).map(mapper::aDominio);
     }
 
     @Override

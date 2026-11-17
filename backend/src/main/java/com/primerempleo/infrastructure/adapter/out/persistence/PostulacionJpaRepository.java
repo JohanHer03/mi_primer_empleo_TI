@@ -2,6 +2,7 @@ package com.primerempleo.infrastructure.adapter.out.persistence;
 
 import com.primerempleo.domain.model.EstadoPostulacion;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +25,8 @@ public interface PostulacionJpaRepository extends JpaRepository<PostulacionEntit
     List<UUID> idsVacantesDe(@Param("candidatoId") UUID candidatoId);
 
     boolean existsByCandidatoIdAndVacanteId(UUID candidatoId, UUID vacanteId);
+
+    Optional<PostulacionEntity> findByCandidatoIdAndVacanteId(UUID candidatoId, UUID vacanteId);
 
     @Query(value = SELECT_CON_VACANTE + "where p.candidatoId = :candidatoId order by p.fecha desc, p.id desc",
             countQuery = "select count(p) from PostulacionEntity p where p.candidatoId = :candidatoId")
