@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-11-16 · Semana 4: backend y frontend del candidato completos (fase 3); sigue la semana 5 (HU-04, detalle con "lo que te falta")
+Última actualización: 2026-11-16 · Semana 4 completa (backend y frontend del candidato); semana 5 en curso: contrato de HU-04 (detalle con "lo que te falta") propuesto
 
 ## Propósito
 
@@ -49,6 +49,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-11-16 | La compatibilidad del detalle (HU-04) devuelve todas las habilidades de la vacante con `cumple` y el nivel del candidato, no solo las faltantes, y sirve también para vacantes cerradas | La pantalla muestra lo que cumple y lo que le falta; desde "Mis postulaciones" se puede abrir una vacante ya cerrada y comparar la compatibilidad de hoy con la guardada |
 | 2026-11-16 | Postularse pide confirmación y, ante un 409, la tarjeta muestra el mensaje y quita el botón sin recargar la búsqueda | La postulación no se puede retirar (contrato 5.5); si se recargara, una vacante que cerró desaparecería junto con el mensaje |
 | 2026-11-16 | Estilos de páginas (`components/Paginas.module.css`), `Paginacion`, `OpcionesHabilidades` y `useCatalogoHabilidades` pasan a ser compartidos entre empresa y candidato | Las pantallas del candidato repiten tarjetas, filtros, paginación y el selector del catálogo |
 | 2026-11-16 | El modo simulado copia `CalculadoraCompatibilidad` en `mocks/compatibilidad.ts` | La búsqueda simulada ordena y muestra porcentajes reales; con el backend la compatibilidad siempre la calcula la API |
@@ -131,7 +132,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | `CalculadoraCompatibilidad` (contrato 5.3) | Hecho (PR #23) | En `domain/service`, Java puro: porcentaje con un decimal y lista de faltantes. 8 pruebas, incluido el ejemplo del contrato (60.0) |
 | Búsqueda de vacantes (HU-03; contrato 5.4) | Hecho (PR #24) | `GET /api/vacantes` solo para CANDIDATO: filtros opcionales con Criteria, compatibilidad calculada al consultar, orden y paginación en memoria, `postulado`. 204 pruebas; probado contra Supabase con la carpeta Búsqueda de Postman (61 peticiones, 122 aserciones) |
 | Postulaciones del candidato (HU-05; contrato 5.5 y 5.6) | Hecho (PR #25) | `POST /api/vacantes/{id}/postulaciones` con las reglas 1, 2 y 6 y `GET /api/postulaciones/me` paginado. `totalPostulaciones` de "Mis vacantes" pasa a JPQL. 218 pruebas; probado contra Supabase con la carpeta Postulaciones de Postman (71 peticiones, 144 aserciones) |
-| Frontend fase 3: candidato (HU-02, HU-03, HU-05) | Hecho en la rama `feat/frontend-candidato` | Inicio con las vacantes más compatibles, perfil (datos y habilidades con nivel), búsqueda con filtros, orden y paginación en la URL y botón "Postularme", y mis postulaciones por estado. Mocks de candidatos, búsqueda y postulaciones. Probado en modo simulado y contra el backend local |
+| Frontend fase 3: candidato (HU-02, HU-03, HU-05) | Hecho (PR #26) | Inicio con las vacantes más compatibles, perfil (datos y habilidades con nivel), búsqueda con filtros, orden y paginación en la URL y botón "Postularme", y mis postulaciones por estado. Mocks de candidatos, búsqueda y postulaciones. Probado en modo simulado y contra el backend local |
+| Contrato de la fase 4: compatibilidad y "lo que te falta" (semana 5) | Propuesto en la rama `docs/contrato-semana5` | Sección 6 de `docs/contrato-api.md`: `GET /api/vacantes/{id}/compatibilidad` (CANDIDATO) con el porcentaje actual, todas las habilidades de la vacante con `cumple` y la postulación si existe; la pantalla usa también `GET /api/vacantes/{id}` |
 | Frontend fases 4 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API), V3 (ajustes de revisión) y V4 (nombre de habilidad único sin distinguir mayúsculas y catálogo inicial de 35 habilidades) aplicadas en Supabase (PostgreSQL 17). Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |

@@ -9,7 +9,8 @@ Se completa antes de cada fase del plan (`docs/plan-frontend.md`). Las rutas gen
 | Autenticación (fase 1) | **Acordado** (2026-10-27). Implementado y en producción (PR #11, #12 y #13) |
 | Endpoints que faltan en la fundamentación | **Acordado** (2026-10-27). Sus DTOs completos se detallan antes de cada fase |
 | Fase 2: habilidades, empresas y vacantes (semana 3) | **Acordado** (2026-10-27, PR #16). Implementado: backend 4.1 a 4.4 y pantallas de empresa |
-| Fase 3: candidato y postulaciones (semana 4) | **Acordado** (2026-11-04, PR #21). Precisa 3.3 y adelanta `CalculadoraCompatibilidad`. Implementado completo (backend): 5.1 a 5.6 |
+| Fase 3: candidato y postulaciones (semana 4) | **Acordado** (2026-11-04, PR #21). Precisa 3.3 y adelanta `CalculadoraCompatibilidad`. Implementado: backend 5.1 a 5.6 (PR #22 a #25) y pantallas del candidato (PR #26) |
+| Fase 4: compatibilidad y "lo que te falta" (semana 5) | **Propuesta** (2026-11-16). Precisa `GET /api/vacantes/{id}/compatibilidad` de la fundamentación |
 
 Cuando el backend apruebe una sección, se cambia su estado a **Acordado** y cualquier cambio posterior se hace con un pull request que toque este archivo.
 
@@ -597,4 +598,96 @@ en la semana 6). Solo lista las del candidato del token.
   → postularse otra vez (409) → postularse a la vacante cerrada (409) → mis postulaciones; y una empresa que intenta buscar (403).
 - **Frontend** (fase 3 de `docs/plan-frontend.md`): `/candidato` (inicio), `/candidato/perfil` (datos y habilidades con nivel),
   `/candidato/vacantes` (filtros, orden, paginación y botón "Postularme" en cada tarjeta) y `/candidato/postulaciones`,
-  primero con API simulada que siga esta sección. El detalle con compatibilidad (`/candidato/vacantes/:id`) es de la fase 4.
+  primero con API simulada que siga esta sección. El detalle con compatibilidad (`/candidato/vacantes/:id`) es de la fase 4 (sección 6).
+
+---
+
+## 6. Fase 4: compatibilidad y "lo que te falta" (semana 5: HU-04)
+
+Entregable: desde la búsqueda o desde sus postulaciones, el candidato abre una vacante y ve su porcentaje de compatibilidad,
+qué habilidades cumple y cuáles le faltan (con el nivel que tiene y el que piden). Es el diferencial del proyecto.
+La semana 5 cierra además el MVP desplegado (fundamentación, plan de 7 semanas); la gestión de postulantes (HU-08 y HU-09)
+y las pantallas del administrador van en la sección 7 (semana 6).
+
+### 6.1 `GET /api/vacantes/{id}/compatibilidad` — CANDIDATO (HU-04)
+
+Calcula con `CalculadoraCompatibilidad` (5.3) la compatibilidad **actual** del candidato del token con la vacante.
+No se guarda: lo que se guarda es la de la postulación (regla 6).
+
+`CompatibilidadDetalle`:
+
+```json
+{
+  "vacanteId": "…",
+  "porcentaje": 60.0,
+  "habilidades": [
+    {
+      "habilidadId": "…",
+      "nombre": "Java",
+      "categoria": "LENGUAJE",
+      "nivelRequerido": "INTERMEDIO",
+      "obligatoria": true,
+      "nivelCandidato": "BASICO",
+      "cumple": false
+    },
+    {
+      "habilidadId": "…",
+      "nombre": "Spring Boot",
+      "categoria": "FRAMEWORK",
+      "nivelRequerido": "BASICO",
+      "obligatoria": true,
+      "nivelCandidato": "AVANZADO",
+      "cumple": true
+    },
+    {
+      "habilidadId": "…",
+      "nombre": "Git",
+      "categoria": "HERRAMIENTA",
+      "nivelRequerido": "BASICO",
+      "obligatoria": false,
+      "nivelCandidato": null,
+      "cumple": false
+    }
+  ],
+  "postulacion": null
+}
+```
+
+| Campo | Contenido |
+| --- | --- |
+| `porcentaje` | De 0.0 a 100.0 con un decimal, igual que `compatibilidad` en la búsqueda (5.4) |
+| `habilidades` | **Todas** las habilidades de la vacante, en el orden de `VacanteDetalle` (obligatorias primero y luego por nombre) |
+| `nivelCandidato` | Nivel del candidato en esa habilidad, o `null` si no la tiene |
+| `cumple` | `true` si `nivelCandidato` ≥ `nivelRequerido` (puntaje 1). Las que tienen `cumple: false` son "lo que te falta" |
+| `postulacion` | `null` si no se ha postulado; si sí, `{ "id", "fecha", "estado", "compatibilidad" }` con la compatibilidad **guardada** al postularse |
+
+| Código | Cuándo |
+| --- | --- |
+| 200 `CompatibilidadDetalle` | También para vacantes cerradas o vencidas: el candidato puede llegar desde "Mis postulaciones" |
+| 403 | EMPRESA o ADMIN (la compatibilidad es del candidato) |
+| 404 `"La vacante no existe"` | |
+
+- Un candidato sin habilidades recibe 200 con `porcentaje: 0.0` y todas las habilidades con `cumple: false`.
+- El ejemplo es el de 5.3: Java básico de intermedio que piden (0,5 × 2), Spring Boot cumplido (1 × 2) y Git que no tiene
+  (0 × 1) dan 3 / 5 = **60.0**. Le faltan Java (subir de básico a intermedio) y Git.
+- Si el candidato editó sus habilidades después de postularse, `porcentaje` y `postulacion.compatibilidad` pueden diferir:
+  el frontend muestra las dos ("hoy" y "al postularte").
+
+### 6.2 Datos de la vacante
+
+La pantalla de detalle usa además `GET /api/vacantes/{id}` (4.4, ya implementado) para título, empresa, descripción,
+salario, fechas y estado. Son dos peticiones en paralelo y no se agrega otro endpoint: el detalle no cambia con el candidato
+y la compatibilidad no le interesa a la empresa.
+
+### 6.3 Postman y frontend
+
+- **Postman** (skill `endpoint-postman`): carpeta Compatibilidad. El candidato de Autenticación (con las habilidades de la
+  carpeta Candidatos) consulta la práctica de la carpeta Búsqueda: 200 con 66.7, `cumple` por habilidad y `postulacion`
+  con la compatibilidad guardada; la vacante cerrada de la carpeta Vacantes (200); una vacante inexistente (404);
+  y una empresa que la consulta (403).
+- **Frontend** (fase 4 de `docs/plan-frontend.md`): `/candidato/vacantes/:id` con los datos de la vacante, el porcentaje,
+  "lo que te falta" (con el nivel que tiene y el que piden, obligatorias primero), lo que ya cumple y el botón "Postularme"
+  si la vacante recibe postulaciones y aún no se postuló. Se llega desde las tarjetas de la búsqueda, del inicio y de
+  "Mis postulaciones". Primero con API simulada que siga esta sección.
+- **Despliegue:** al fusionar, prueba de punta a punta en producción con una cuenta de candidato de prueba
+  (registro, habilidades, búsqueda, detalle y postularse) y revisión de los registros de Vercel.
