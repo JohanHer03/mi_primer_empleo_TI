@@ -4,7 +4,7 @@ import { listarMisVacantes } from '../../api/vacantes'
 import { AvisoVerificacion } from '../../components/AvisoVerificacion'
 import { Cargando, MensajeError } from '../../components/Estados'
 import { CLAVES, useMiPerfil } from './consultas'
-import estilos from './PaginasEmpresa.module.css'
+import estilos from '../../components/Paginas.module.css'
 
 /** Inicio de la empresa: estado de la verificación y accesos a sus vacantes. */
 export default function InicioEmpresa() {

@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-11-04 · Semana 4 en curso: backend completo (perfil, habilidades, compatibilidad, búsqueda y postulaciones); falta la fase 3 del frontend
+Última actualización: 2026-11-16 · Semana 4: backend y frontend del candidato completos (fase 3); sigue la semana 5 (HU-04, detalle con "lo que te falta")
 
 ## Propósito
 
@@ -49,6 +49,9 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-11-16 | Postularse pide confirmación y, ante un 409, la tarjeta muestra el mensaje y quita el botón sin recargar la búsqueda | La postulación no se puede retirar (contrato 5.5); si se recargara, una vacante que cerró desaparecería junto con el mensaje |
+| 2026-11-16 | Estilos de páginas (`components/Paginas.module.css`), `Paginacion`, `OpcionesHabilidades` y `useCatalogoHabilidades` pasan a ser compartidos entre empresa y candidato | Las pantallas del candidato repiten tarjetas, filtros, paginación y el selector del catálogo |
+| 2026-11-16 | El modo simulado copia `CalculadoraCompatibilidad` en `mocks/compatibilidad.ts` | La búsqueda simulada ordena y muestra porcentajes reales; con el backend la compatibilidad siempre la calcula la API |
 | 2026-11-16 | Al postularse, primero se comprueba la regla 1 (409 "Ya te postulaste") y luego la 2 (409 "ya no recibe postulaciones"); una vacante abierta pero vencida tampoco recibe postulaciones | Si ya se postuló a una vacante que luego cerró, el mensaje más útil es que ya se postuló. `uq_postulaciones_candidato_vacante` respalda la regla 1 con el mismo 409 |
 | 2026-11-16 | "Mis postulaciones" sale de una consulta JPQL que une postulaciones, vacantes y empresas en una sola fila (`PostulacionConVacanteFila`) | Evita cargar cada vacante con sus habilidades solo para mostrar el título |
 | 2026-11-16 | Supabase pausó el proyecto gratuito tras unos 11 días sin actividad: el backend no arrancaba (`tenant/user ... not found`) y la API de producción respondía 500; se restauró desde el panel de Supabase | Antes de la entrega y la sustentación, hacer una petición a la API unos días antes y el mismo día |
@@ -127,8 +130,9 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Perfil y habilidades del candidato (HU-02; contrato 5.1 y 5.2) | Hecho (PR #22) | `GET` y `PUT /api/candidatos/me` y `PUT /api/candidatos/me/habilidades` (reemplaza la lista, 0 a 30). 182 pruebas; probado contra Supabase con la carpeta Candidatos de Postman |
 | `CalculadoraCompatibilidad` (contrato 5.3) | Hecho (PR #23) | En `domain/service`, Java puro: porcentaje con un decimal y lista de faltantes. 8 pruebas, incluido el ejemplo del contrato (60.0) |
 | Búsqueda de vacantes (HU-03; contrato 5.4) | Hecho (PR #24) | `GET /api/vacantes` solo para CANDIDATO: filtros opcionales con Criteria, compatibilidad calculada al consultar, orden y paginación en memoria, `postulado`. 204 pruebas; probado contra Supabase con la carpeta Búsqueda de Postman (61 peticiones, 122 aserciones) |
-| Postulaciones del candidato (HU-05; contrato 5.5 y 5.6) | Hecho en la rama `feat/backend-postulaciones` | `POST /api/vacantes/{id}/postulaciones` con las reglas 1, 2 y 6 y `GET /api/postulaciones/me` paginado. `totalPostulaciones` de "Mis vacantes" pasa a JPQL. 218 pruebas; probado contra Supabase con la carpeta Postulaciones de Postman (71 peticiones, 144 aserciones) |
-| Frontend fases 3 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
+| Postulaciones del candidato (HU-05; contrato 5.5 y 5.6) | Hecho (PR #25) | `POST /api/vacantes/{id}/postulaciones` con las reglas 1, 2 y 6 y `GET /api/postulaciones/me` paginado. `totalPostulaciones` de "Mis vacantes" pasa a JPQL. 218 pruebas; probado contra Supabase con la carpeta Postulaciones de Postman (71 peticiones, 144 aserciones) |
+| Frontend fase 3: candidato (HU-02, HU-03, HU-05) | Hecho en la rama `feat/frontend-candidato` | Inicio con las vacantes más compatibles, perfil (datos y habilidades con nivel), búsqueda con filtros, orden y paginación en la URL y botón "Postularme", y mis postulaciones por estado. Mocks de candidatos, búsqueda y postulaciones. Probado en modo simulado y contra el backend local |
+| Frontend fases 4 a 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API), V3 (ajustes de revisión) y V4 (nombre de habilidad único sin distinguir mayúsculas y catálogo inicial de 35 habilidades) aplicadas en Supabase (PostgreSQL 17). Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
 | Autenticación en el backend (HU-01, HU-06) | Hecho | PR #11 (JWT, filtro y BCrypt), #12 (registro, login y administrador inicial) y #13 (CORS detrás del proxy de Vercel); 80 pruebas en verde. Probado en producción: el administrador se crea desde `ADMIN_EMAIL`/`ADMIN_PASSWORD` y el login lleva a su panel. Colección de Postman en `/postman` |

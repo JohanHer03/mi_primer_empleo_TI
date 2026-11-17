@@ -7,8 +7,9 @@ import { AvisoVerificacion } from '../../components/AvisoVerificacion'
 import { Cargando, EstadoVacio, MensajeError } from '../../components/Estados'
 import formulario from '../../components/Formulario.module.css'
 import { estadoVisible, formatearFecha, TEXTO_MODALIDAD, TEXTO_TIPO } from '../../components/formato'
+import { Paginacion } from '../../components/Paginacion'
 import { CLAVES, useMiPerfil } from './consultas'
-import estilos from './PaginasEmpresa.module.css'
+import estilos from '../../components/Paginas.module.css'
 
 const FILTROS: { estado: EstadoVacante | undefined; texto: string }[] = [
   { estado: undefined, texto: 'Todas' },
@@ -103,29 +104,11 @@ export default function MisVacantes() {
               <TarjetaVacante key={vacante.id} vacante={vacante} />
             ))}
           </ul>
-          {vacantes.data.totalPaginas > 1 && (
-            <nav className={estilos.paginacion} aria-label="Paginación">
-              <button
-                type="button"
-                className="boton boton-secundario"
-                disabled={pagina === 0}
-                onClick={() => cambiar(estado, pagina - 1)}
-              >
-                Anterior
-              </button>
-              <span>
-                Página {pagina + 1} de {vacantes.data.totalPaginas}
-              </span>
-              <button
-                type="button"
-                className="boton boton-secundario"
-                disabled={pagina + 1 >= vacantes.data.totalPaginas}
-                onClick={() => cambiar(estado, pagina + 1)}
-              >
-                Siguiente
-              </button>
-            </nav>
-          )}
+          <Paginacion
+            pagina={pagina}
+            totalPaginas={vacantes.data.totalPaginas}
+            alCambiar={(nueva) => cambiar(estado, nueva)}
+          />
         </>
       )}
     </section>

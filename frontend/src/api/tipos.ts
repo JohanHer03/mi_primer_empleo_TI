@@ -146,3 +146,92 @@ export interface VacanteDeEmpresaResumen {
   fechaCierre: string
   totalPostulaciones: number
 }
+
+// Fase 3: candidato y postulaciones (docs/contrato-api.md, sección 5)
+
+/** Habilidad del candidato con su nivel, en el orden del catálogo. */
+export interface CandidatoHabilidad {
+  habilidadId: string
+  nombre: string
+  categoria: CategoriaHabilidad
+  nivel: NivelHabilidad
+}
+
+export interface CandidatoPerfil {
+  id: string
+  email: string
+  nombres: string
+  apellidos: string
+  estadoAcademico: EstadoAcademico
+  semestre: number | null
+  universidad: string | null
+  programa: string | null
+  ciudad: string | null
+  githubUrl: string | null
+  resumen: string | null
+  habilidades: CandidatoHabilidad[]
+}
+
+/** El correo no se edita y las habilidades van por PUT /api/candidatos/me/habilidades (contrato 5.1). */
+export interface ActualizarCandidatoPeticion {
+  nombres: string
+  apellidos: string
+  estadoAcademico: EstadoAcademico
+  semestre: number | null
+  universidad: string | null
+  programa: string | null
+  ciudad: string | null
+  githubUrl: string | null
+  resumen: string | null
+}
+
+export interface CandidatoHabilidadPeticion {
+  habilidadId: string
+  nivel: NivelHabilidad
+}
+
+export type OrdenVacantes = 'compatibilidad' | 'fechaPublicacion'
+
+/** Filtros opcionales de GET /api/vacantes (contrato 5.4). */
+export interface FiltrosVacantes {
+  modalidad?: Modalidad
+  tipo?: TipoVacante
+  habilidadId?: string
+  ciudad?: string
+  orden?: OrdenVacantes
+}
+
+export interface VacanteResumen {
+  id: string
+  titulo: string
+  empresa: { id: string; razonSocial: string }
+  tipo: TipoVacante
+  modalidad: Modalidad
+  ciudad: string
+  salarioMin: number | null
+  salarioMax: number | null
+  fechaPublicacion: string
+  fechaCierre: string
+  /** De 0 a 100 con un decimal; se calcula al consultar. */
+  compatibilidad: number
+  postulado: boolean
+}
+
+export type EstadoPostulacion = 'ENVIADA' | 'EN_REVISION' | 'ENTREVISTA' | 'RECHAZADA' | 'CONTRATADO'
+
+export interface PostulacionDeCandidato {
+  id: string
+  fecha: string
+  estado: EstadoPostulacion
+  /** La calculada al postularse (regla 6): no cambia aunque el candidato edite sus habilidades. */
+  compatibilidad: number
+  vacante: {
+    id: string
+    titulo: string
+    empresa: { id: string; razonSocial: string }
+    modalidad: Modalidad
+    ciudad: string
+    estado: EstadoVacante
+    fechaCierre: string
+  }
+}

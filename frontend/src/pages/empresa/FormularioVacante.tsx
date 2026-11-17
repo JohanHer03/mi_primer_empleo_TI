@@ -5,7 +5,7 @@ import { useFieldArray, useForm } from 'react-hook-form'
 import { Link, useNavigate, useParams } from 'react-router'
 import { z } from 'zod'
 import { ErrorApi } from '../../api/cliente'
-import type { CategoriaHabilidad, Habilidad, VacanteDetalle, VacantePeticion } from '../../api/tipos'
+import type { Habilidad, VacanteDetalle, VacantePeticion } from '../../api/tipos'
 import { editarVacante, obtenerVacante, publicarVacante } from '../../api/vacantes'
 import { idsDescripcion } from '../../components/accesibilidad'
 import { AvisoDemora } from '../../components/AvisoDemora'
@@ -14,9 +14,11 @@ import { Campo } from '../../components/Campo'
 import { Cargando, EstadoVacio, MensajeError } from '../../components/Estados'
 import { aplicarErroresDeValidacion } from '../../components/erroresServidor'
 import formulario from '../../components/Formulario.module.css'
-import { hoyEnColombia, TEXTO_CATEGORIA, TEXTO_MODALIDAD, TEXTO_NIVEL, TEXTO_TIPO } from '../../components/formato'
-import { CLAVES, useCatalogoHabilidades, useMiPerfil } from './consultas'
-import estilos from './PaginasEmpresa.module.css'
+import { hoyEnColombia, TEXTO_MODALIDAD, TEXTO_NIVEL, TEXTO_TIPO } from '../../components/formato'
+import { OpcionesHabilidades } from '../../components/OpcionesHabilidades'
+import { useCatalogoHabilidades } from '../../hooks/useCatalogoHabilidades'
+import { CLAVES, useMiPerfil } from './consultas'
+import estilos from '../../components/Paginas.module.css'
 
 const MAXIMO_HABILIDADES = 15
 
@@ -225,10 +227,6 @@ function DatosDeVacante({ vacanteId, catalogo, inicial }: PropsDatos) {
     },
   })
 
-  const porCategoria = Object.entries(TEXTO_CATEGORIA).map(([categoria, texto]) => ({
-    texto,
-    habilidades: catalogo.filter((h) => h.categoria === (categoria as CategoriaHabilidad)),
-  }))
   const errorHabilidades = errors.habilidades?.message ?? errors.habilidades?.root?.message
 
   return (
@@ -361,15 +359,7 @@ function DatosDeVacante({ vacanteId, catalogo, inicial }: PropsDatos) {
                   {...register(`habilidades.${indice}.habilidadId`)}
                 >
                   <option value="">Elige una habilidad</option>
-                  {porCategoria.map((grupo) => (
-                    <optgroup key={grupo.texto} label={grupo.texto}>
-                      {grupo.habilidades.map((habilidad) => (
-                        <option key={habilidad.id} value={habilidad.id}>
-                          {habilidad.nombre}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
+                  <OpcionesHabilidades catalogo={catalogo} />
                 </select>
                 {errorFila?.habilidadId && (
                   <p id={`v-hab-${indice}-error`} className={formulario.errorCampo}>

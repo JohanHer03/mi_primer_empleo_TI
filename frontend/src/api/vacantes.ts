@@ -1,4 +1,5 @@
 import { peticion, usarMocks } from './cliente'
+import { buscarVacantesMock } from './mocks/busqueda'
 import {
   cerrarVacanteMock,
   editarVacanteMock,
@@ -6,9 +7,17 @@ import {
   obtenerVacanteMock,
   publicarVacanteMock,
 } from './mocks/vacantes'
-import type { EstadoVacante, PaginaDto, VacanteDeEmpresaResumen, VacanteDetalle, VacantePeticion } from './tipos'
+import type {
+  EstadoVacante,
+  FiltrosVacantes,
+  PaginaDto,
+  VacanteDeEmpresaResumen,
+  VacanteDetalle,
+  VacantePeticion,
+  VacanteResumen,
+} from './tipos'
 
-// docs/contrato-api.md, secciones 3.2 y 4.4
+// docs/contrato-api.md, secciones 3.2, 4.4 y 5.4
 
 export function publicarVacante(datos: VacantePeticion): Promise<VacanteDetalle> {
   if (usarMocks) return publicarVacanteMock(datos)
@@ -39,5 +48,17 @@ export function listarMisVacantes(
   if (usarMocks) return listarMisVacantesMock(estado, pagina, tamano)
   return peticion<PaginaDto<VacanteDeEmpresaResumen>>('/empresas/me/vacantes', {
     parametros: { estado, page: pagina, size: tamano },
+  })
+}
+
+/** Búsqueda del candidato: solo vacantes abiertas y vigentes, con su compatibilidad y si ya se postuló. */
+export function buscarVacantes(
+  filtros: FiltrosVacantes,
+  pagina: number,
+  tamano = 10,
+): Promise<PaginaDto<VacanteResumen>> {
+  if (usarMocks) return buscarVacantesMock(filtros, pagina, tamano)
+  return peticion<PaginaDto<VacanteResumen>>('/vacantes', {
+    parametros: { ...filtros, page: pagina, size: tamano },
   })
 }

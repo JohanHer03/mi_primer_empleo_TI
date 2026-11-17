@@ -1,4 +1,4 @@
-/* Estilos compartidos de las pantallas de empresa (fase 2). */
+/* Estilos compartidos de las pantallas con sesión (empresa desde la fase 2, candidato desde la fase 3). */
 
 .pagina {
   display: flex;
@@ -148,6 +148,12 @@
   background: var(--color-fondo);
   color: var(--color-texto-suave);
   border: 1px solid var(--color-borde);
+}
+
+/* Postulación en curso (enviada, en revisión o entrevista) */
+.insigniaENCURSO {
+  background: color-mix(in srgb, var(--color-primario) 14%, transparent);
+  color: var(--color-primario);
 }
 
 .paginacion {

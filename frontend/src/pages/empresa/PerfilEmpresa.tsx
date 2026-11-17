@@ -14,7 +14,7 @@ import { aplicarErroresDeValidacion } from '../../components/erroresServidor'
 import formulario from '../../components/Formulario.module.css'
 import { vacioANulo } from '../publico/registro/esquemas'
 import { CLAVES, useMiPerfil } from './consultas'
-import estilos from './PaginasEmpresa.module.css'
+import estilos from '../../components/Paginas.module.css'
 
 // Validaciones de ActualizarEmpresaPeticion (contrato 4.2), las mismas del registro (2.4)
 const esquema = z.object({
