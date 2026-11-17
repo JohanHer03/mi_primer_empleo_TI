@@ -2,14 +2,21 @@ package com.primerempleo.domain.service;
 
 import com.primerempleo.domain.model.Candidato;
 import com.primerempleo.domain.model.CandidatoHabilidad;
+import com.primerempleo.domain.model.CompatibilidadDetalle;
+import com.primerempleo.domain.model.CompatibilidadDetalle.HabilidadEvaluada;
+import com.primerempleo.domain.model.Habilidad;
+import com.primerempleo.domain.model.HabilidadDeVacante;
 import com.primerempleo.domain.model.NivelHabilidad;
+import com.primerempleo.domain.model.Postulacion;
 import com.primerempleo.domain.model.Vacante;
 import com.primerempleo.domain.model.VacanteHabilidad;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -45,13 +52,34 @@ public final class CalculadoraCompatibilidad {
         }
     }
 
+    /**
+     * Detalle de la HU-04 (docs/contrato-api.md 6.1): el porcentaje actual y cada habilidad de la vacante con el nivel
+     * del candidato y si la cumple. Las que no cumple son las mismas {@code faltantes} de {@link #calcular}.
+     *
+     * @param catalogo las habilidades del catálogo que pide la vacante
+     * @param postulacion la postulación del candidato a la vacante, o null
+     * @throws com.primerempleo.domain.exception.DatosInvalidosException si una habilidad no está en el catálogo
+     */
+    public static CompatibilidadDetalle detallar(Vacante vacante, Candidato candidato, Collection<Habilidad> catalogo,
+                                                 Postulacion postulacion) {
+        Resultado resultado = calcular(vacante, candidato);
+        Set<UUID> faltantes = resultado.faltantes().stream().map(HabilidadFaltante::habilidadId).collect(Collectors.toSet());
+        Map<UUID, NivelHabilidad> nivelesCandidato = nivelesDe(candidato.habilidades());
+        List<HabilidadEvaluada> evaluadas = HabilidadDeVacante.unirConCatalogo(vacante.habilidades(), catalogo).stream()
+                .map(requerida -> {
+                    UUID id = requerida.habilidad().id();
+                    return new HabilidadEvaluada(requerida, nivelesCandidato.get(id), !faltantes.contains(id));
+                })
+                .toList();
+        return new CompatibilidadDetalle(vacante.id(), resultado.porcentaje(), evaluadas, postulacion);
+    }
+
     public static Resultado calcular(Vacante vacante, Candidato candidato) {
         return calcular(vacante.habilidades(), candidato.habilidades());
     }
 
     public static Resultado calcular(List<VacanteHabilidad> requeridas, List<CandidatoHabilidad> delCandidato) {
-        Map<UUID, NivelHabilidad> nivelesCandidato = delCandidato.stream()
-                .collect(Collectors.toMap(CandidatoHabilidad::habilidadId, CandidatoHabilidad::nivel, (a, b) -> a));
+        Map<UUID, NivelHabilidad> nivelesCandidato = nivelesDe(delCandidato);
         long puntos = 0;
         long pesos = 0;
         List<HabilidadFaltante> faltantes = new ArrayList<>();
@@ -72,6 +100,11 @@ public final class CalculadoraCompatibilidad {
         BigDecimal porcentaje = BigDecimal.valueOf(puntos * 100)
                 .divide(BigDecimal.valueOf(pesos * ESCALA_PUNTAJE), 1, RoundingMode.HALF_UP);
         return new Resultado(porcentaje, faltantes);
+    }
+
+    private static Map<UUID, NivelHabilidad> nivelesDe(List<CandidatoHabilidad> habilidades) {
+        return habilidades.stream()
+                .collect(Collectors.toMap(CandidatoHabilidad::habilidadId, CandidatoHabilidad::nivel, (a, b) -> a));
     }
 
     /** {@code min(1, nivelCandidato / nivelRequerido) × 6}; 0 si el candidato no tiene la habilidad. */
