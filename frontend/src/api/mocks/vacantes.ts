@@ -37,7 +37,7 @@ function vacantesDemo(): VacanteGuardada[] {
   }
   return [
     {
-      totalPostulaciones: 12,
+      totalPostulaciones: 4,
       detalle: {
         ...base,
         id: '66666666-0000-4000-8000-000000000001',
@@ -53,7 +53,7 @@ function vacantesDemo(): VacanteGuardada[] {
       },
     },
     {
-      totalPostulaciones: 4,
+      totalPostulaciones: 1,
       detalle: {
         ...base,
         id: '66666666-0000-4000-8000-000000000002',
@@ -69,7 +69,7 @@ function vacantesDemo(): VacanteGuardada[] {
       },
     },
     {
-      totalPostulaciones: 20,
+      totalPostulaciones: 1,
       detalle: {
         ...base,
         id: '66666666-0000-4000-8000-000000000003',
@@ -160,7 +160,7 @@ function validar(datos: VacantePeticion): HabilidadRequerida[] {
 }
 
 /** La vacante de la empresa del usuario: 404 si no existe, 403 si es de otra (regla 4). */
-function vacantePropia(id: string): VacanteGuardada {
+export function vacantePropia(id: string): VacanteGuardada {
   const empresa = perfilEmpresaActualMock()
   const guardada = leerVacantes().find((v) => v.detalle.id === id)
   if (!guardada) throw new ErrorApi(404, 'La vacante no existe')

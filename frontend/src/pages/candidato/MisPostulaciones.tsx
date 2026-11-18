@@ -3,23 +3,20 @@ import { Link, useSearchParams } from 'react-router'
 import { listarMisPostulaciones } from '../../api/postulaciones'
 import type { EstadoPostulacion, PostulacionDeCandidato } from '../../api/tipos'
 import { Cargando, EstadoVacio, MensajeError } from '../../components/Estados'
-import { estadoVisible, formatearFecha, TEXTO_ESTADO_POSTULACION, TEXTO_MODALIDAD } from '../../components/formato'
+import {
+  estadoVisible,
+  formatearFecha,
+  INSIGNIA_ESTADO_POSTULACION,
+  TEXTO_ESTADO_POSTULACION,
+  TEXTO_MODALIDAD,
+} from '../../components/formato'
 import { Paginacion } from '../../components/Paginacion'
+import { IndicadorCompatibilidad } from '../../components/IndicadorCompatibilidad'
 import comunes from '../../components/Paginas.module.css'
 import { CLAVES } from './consultas'
-import { IndicadorCompatibilidad } from './IndicadorCompatibilidad'
 import estilos from './PaginasCandidato.module.css'
 
 const ESTADOS = Object.keys(TEXTO_ESTADO_POSTULACION) as EstadoPostulacion[]
-
-/** Color de la insignia: en curso (azul), contratado (verde), rechazada (gris). */
-const INSIGNIA: Record<EstadoPostulacion, string> = {
-  ENVIADA: 'insigniaENCURSO',
-  EN_REVISION: 'insigniaENCURSO',
-  ENTREVISTA: 'insigniaENCURSO',
-  CONTRATADO: 'insigniaABIERTA',
-  RECHAZADA: 'insigniaCERRADA',
-}
 
 /** HU-05: el candidato sigue el estado de sus postulaciones (GET /api/postulaciones/me). */
 export default function MisPostulaciones() {
@@ -103,7 +100,7 @@ function TarjetaPostulacion({ postulacion }: { postulacion: PostulacionDeCandida
           <Link to={`/candidato/vacantes/${vacante.id}`} className={estilos.enlaceTitulo}>
             {vacante.titulo}
           </Link>
-          <span className={`${comunes.insignia} ${comunes[INSIGNIA[postulacion.estado]]}`}>
+          <span className={`${comunes.insignia} ${comunes[INSIGNIA_ESTADO_POSTULACION[postulacion.estado]]}`}>
             {TEXTO_ESTADO_POSTULACION[postulacion.estado]}
           </span>
         </h2>

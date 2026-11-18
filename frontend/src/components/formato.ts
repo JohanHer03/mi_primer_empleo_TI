@@ -47,6 +47,33 @@ export const TEXTO_ESTADO_POSTULACION: Record<EstadoPostulacion, string> = {
   RECHAZADA: 'Rechazada',
 }
 
+/** Regla 5 (contrato 7.2): a qué estados puede pasar cada uno, primero el avance y luego el rechazo. */
+export const SIGUIENTES_ESTADOS: Record<EstadoPostulacion, EstadoPostulacion[]> = {
+  ENVIADA: ['EN_REVISION', 'RECHAZADA'],
+  EN_REVISION: ['ENTREVISTA', 'RECHAZADA'],
+  ENTREVISTA: ['CONTRATADO', 'RECHAZADA'],
+  CONTRATADO: [],
+  RECHAZADA: [],
+}
+
+/** Texto del botón que lleva a cada estado. */
+export const TEXTO_ACCION_ESTADO: Record<EstadoPostulacion, string> = {
+  ENVIADA: 'Enviada',
+  EN_REVISION: 'Pasar a revisión',
+  ENTREVISTA: 'Citar a entrevista',
+  CONTRATADO: 'Contratar',
+  RECHAZADA: 'Rechazar',
+}
+
+/** Clase de `Paginas.module.css` para la insignia: en curso (azul), contratado (verde), rechazada (gris). */
+export const INSIGNIA_ESTADO_POSTULACION: Record<EstadoPostulacion, string> = {
+  ENVIADA: 'insigniaENCURSO',
+  EN_REVISION: 'insigniaENCURSO',
+  ENTREVISTA: 'insigniaENCURSO',
+  CONTRATADO: 'insigniaABIERTA',
+  RECHAZADA: 'insigniaCERRADA',
+}
+
 const PORCENTAJE = new Intl.NumberFormat('es-CO', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 
 /** 66.7 → "66,7 %". */

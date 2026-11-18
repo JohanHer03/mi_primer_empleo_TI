@@ -8,8 +8,8 @@ import {
   TEXTO_MODALIDAD,
   TEXTO_TIPO,
 } from '../../components/formato'
+import { IndicadorCompatibilidad } from '../../components/IndicadorCompatibilidad'
 import comunes from '../../components/Paginas.module.css'
-import { IndicadorCompatibilidad } from './IndicadorCompatibilidad'
 import estilos from './PaginasCandidato.module.css'
 import { usePostularse } from './usePostularse'
 

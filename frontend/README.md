@@ -42,6 +42,9 @@ simulada copia la fórmula de `CalculadoraCompatibilidad` (`src/api/mocks/compat
 en `/registro` empiezan sin habilidades. Se guardan en `primer-empleo.mock.candidatos` y `primer-empleo.mock.postulaciones`.
 Si ya habías usado el modo simulado y no ves las vacantes nuevas, borra `primer-empleo.mock.vacantes` del `localStorage`.
 El detalle de cada vacante (`/candidato/vacantes/:id`) calcula "lo que te falta" con las habilidades simuladas del candidato.
+"Desarrollador Java junior" de la empresa de demostración tiene cuatro postulantes (candidatos sin cuenta) para probar la
+pantalla de postulantes y los cambios de estado. El administrador ve otras cuatro empresas, dos por verificar; las habilidades
+que crea y las verificaciones se guardan en `primer-empleo.mock.habilidades` y `primer-empleo.mock.empresas-verificadas`.
 
 Para simular una red lenta o el arranque en frío del backend (y ver los estados de carga y el aviso
 "Estamos despertando el servidor"), en la consola del navegador:

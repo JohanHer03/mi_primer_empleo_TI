@@ -43,6 +43,55 @@ function candidatoDemo(): CandidatoPerfil {
   }
 }
 
+/**
+ * Candidatos de demostración sin cuenta: se postularon a la vacante "Desarrollador Java junior" de la empresa
+ * de demostración para que la pantalla de postulantes (HU-08) tenga a quién mostrar.
+ */
+const CANDIDATOS_SIN_CUENTA: CandidatoPerfil[] = [
+  sinCuenta('77777777-0000-4000-8000-000000000001', 'Andrés', 'Restrepo Vélez', 'EGRESADO', null,
+    'Universidad Nacional de Colombia', 'Ingeniería de Sistemas e Informática', 'https://github.com/andresrestrepo',
+    [['Java', 'AVANZADO'], ['Spring Boot', 'INTERMEDIO'], ['Git', 'INTERMEDIO'], ['PostgreSQL', 'INTERMEDIO']]),
+  sinCuenta('77777777-0000-4000-8000-000000000002', 'Camila', 'Ortiz Londoño', 'ESTUDIANTE', 10,
+    'Universidad EAFIT', 'Ingeniería de Sistemas', null, [['Java', 'INTERMEDIO'], ['Git', 'BASICO'], ['Inglés', 'AVANZADO']]),
+  sinCuenta('77777777-0000-4000-8000-000000000003', 'Santiago', 'Mejía Arango', 'ESTUDIANTE', 9,
+    'Politécnico Colombiano Jaime Isaza Cadavid', 'Tecnología en Sistemas', 'https://github.com/santimejia',
+    [['Java', 'BASICO'], ['Spring Boot', 'BASICO'], ['Docker', 'BASICO']]),
+  sinCuenta('77777777-0000-4000-8000-000000000004', 'Valeria', 'Cano Gil', 'EGRESADO', null,
+    'Universidad de Medellín', 'Ingeniería de Software', null, [['Python', 'INTERMEDIO'], ['SQL', 'INTERMEDIO']]),
+]
+
+function sinCuenta(
+  id: string,
+  nombres: string,
+  apellidos: string,
+  estadoAcademico: CandidatoPerfil['estadoAcademico'],
+  semestre: number | null,
+  universidad: string,
+  programa: string,
+  githubUrl: string | null,
+  habilidades: [string, NivelHabilidad][],
+): CandidatoPerfil {
+  return {
+    id,
+    email: `${nombres.toLowerCase()}.${apellidos.split(' ')[0].toLowerCase()}@example.com`,
+    nombres,
+    apellidos,
+    estadoAcademico,
+    semestre,
+    universidad,
+    programa,
+    ciudad: 'Medellín',
+    githubUrl,
+    resumen: `Me interesa empezar mi carrera como desarrollador en un equipo que me acompañe.`,
+    habilidades: conNombres(habilidades.map(([nombre, nivel]) => ({ habilidadId: idDe(nombre), nivel }))),
+  }
+}
+
+/** Perfil de cualquier candidato por su id (no el de usuario): lo usa la lista de postulantes de la empresa. */
+export function perfilCandidatoPorIdMock(candidatoId: string): CandidatoPerfil | undefined {
+  return [...Object.values(leerPerfiles()), candidatoDemo(), ...CANDIDATOS_SIN_CUENTA].find((c) => c.id === candidatoId)
+}
+
 function idDe(nombre: string): string {
   return CATALOGO_MOCK.find((h) => h.nombre === nombre)!.id
 }

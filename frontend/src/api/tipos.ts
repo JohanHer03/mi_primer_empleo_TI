@@ -259,3 +259,31 @@ export interface CompatibilidadDetalle {
   /** null si no se ha postulado; si sí, con la compatibilidad guardada al postularse (regla 6). */
   postulacion: { id: string; fecha: string; estado: EstadoPostulacion; compatibilidad: number } | null
 }
+
+// Fase 5: gestión de postulantes y administración (docs/contrato-api.md, secciones 3.1, 4.1, 4.3 y 7)
+
+/** Postulación vista por la empresa dueña de la vacante (7.1): compatibilidad guardada y perfil del candidato de hoy. */
+export interface Postulante {
+  id: string
+  fecha: string
+  estado: EstadoPostulacion
+  compatibilidad: number
+  candidato: CandidatoPerfil
+}
+
+export interface EmpresaResumen {
+  id: string
+  razonSocial: string
+  nit: string
+  email: string
+  sector: string | null
+  ciudad: string | null
+  sitioWeb: string | null
+  verificada: boolean
+  fechaCreacion: string
+}
+
+export interface CrearHabilidadPeticion {
+  nombre: string
+  categoria: CategoriaHabilidad
+}

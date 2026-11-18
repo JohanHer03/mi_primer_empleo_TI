@@ -8,6 +8,7 @@ export const CLAVES = {
   perfil: ['empresa', 'perfil'] as const,
   misVacantes: ['vacantes', 'mias'] as const,
   vacante: (id: string) => ['vacantes', 'detalle', id] as const,
+  postulantes: (vacanteId: string) => ['vacantes', 'postulantes', vacanteId] as const,
 }
 
 export function useMiPerfil() {
