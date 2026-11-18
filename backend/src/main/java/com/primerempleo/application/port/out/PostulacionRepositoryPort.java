@@ -16,6 +16,8 @@ public interface PostulacionRepositoryPort {
 
     boolean existe(UUID candidatoId, UUID vacanteId);
 
+    Optional<Postulacion> buscarPorId(UUID id);
+
     /** La postulación del candidato a la vacante, si existe (a lo sumo una, regla 1). */
     Optional<Postulacion> buscar(UUID candidatoId, UUID vacanteId);
 
@@ -28,4 +30,13 @@ public interface PostulacionRepositoryPort {
      */
     Pagina<PostulacionDeCandidato> listarDeCandidato(UUID candidatoId, EstadoPostulacion estado,
                                                      SolicitudPagina solicitud);
+
+    /**
+     * Postulaciones de una vacante por compatibilidad guardada (mayor primero) y, con empate, por fecha (la más antigua
+     * primero). {@code estado} null lista todas.
+     */
+    Pagina<Postulacion> listarDeVacante(UUID vacanteId, EstadoPostulacion estado, SolicitudPagina solicitud);
+
+    /** Guarda el nuevo estado de una postulación que ya existe (lo único que cambia, regla 6). */
+    Postulacion actualizarEstado(Postulacion postulacion);
 }

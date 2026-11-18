@@ -1,5 +1,7 @@
 package com.primerempleo.infrastructure.adapter.out.persistence;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,4 +16,8 @@ public interface CandidatoJpaRepository extends JpaRepository<CandidatoEntity, U
     @Query("select new com.primerempleo.infrastructure.adapter.out.persistence.CandidatoConCorreoFila(c, u.email) "
             + "from CandidatoEntity c join UsuarioEntity u on u.id = c.usuarioId where c.usuarioId = :usuarioId")
     Optional<CandidatoConCorreoFila> buscarConCorreoPorUsuarioId(@Param("usuarioId") UUID usuarioId);
+
+    @Query("select new com.primerempleo.infrastructure.adapter.out.persistence.CandidatoConCorreoFila(c, u.email) "
+            + "from CandidatoEntity c join UsuarioEntity u on u.id = c.usuarioId where c.id in :ids")
+    List<CandidatoConCorreoFila> buscarConCorreoPorIds(@Param("ids") Collection<UUID> ids);
 }

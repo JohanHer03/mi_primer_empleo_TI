@@ -1,5 +1,6 @@
 package com.primerempleo.domain.model;
 
+import com.primerempleo.domain.exception.OperacionNoPermitidaException;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -36,5 +37,20 @@ public record Postulacion(
     public static Postulacion nueva(UUID candidatoId, UUID vacanteId, BigDecimal compatibilidad, Instant ahora) {
         return new Postulacion(UUID.randomUUID(), candidatoId, vacanteId, ahora.truncatedTo(ChronoUnit.MICROS),
                 EstadoPostulacion.ENVIADA, compatibilidad);
+    }
+
+    /**
+     * Regla 5: la empresa avanza la postulación de un estado al siguiente o la rechaza. La compatibilidad no cambia (regla 6).
+     *
+     * @throws OperacionNoPermitidaException si la transición no está permitida (también pedir el mismo estado)
+     */
+    public Postulacion cambiarEstado(EstadoPostulacion nuevo) {
+        if (estado.esFinal()) {
+            throw OperacionNoPermitidaException.postulacionEnEstadoFinal(estado);
+        }
+        if (!estado.puedePasarA(nuevo)) {
+            throw OperacionNoPermitidaException.transicionNoPermitida(estado);
+        }
+        return new Postulacion(id, candidatoId, vacanteId, fecha, nuevo, compatibilidad);
     }
 }

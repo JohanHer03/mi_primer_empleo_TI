@@ -4,6 +4,8 @@ import com.primerempleo.application.port.out.CandidatoRepositoryPort;
 import com.primerempleo.domain.exception.RecursoNoEncontradoException;
 import com.primerempleo.domain.model.Candidato;
 import com.primerempleo.domain.model.CandidatoConCuenta;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -36,5 +38,15 @@ public class CandidatoPersistenceAdapter implements CandidatoRepositoryPort {
     public Optional<CandidatoConCuenta> buscarConCuentaPorUsuarioId(UUID usuarioId) {
         return repositorio.buscarConCorreoPorUsuarioId(usuarioId)
                 .map(fila -> new CandidatoConCuenta(mapper.aDominio(fila.candidato()), fila.email()));
+    }
+
+    @Override
+    public List<CandidatoConCuenta> buscarConCuentaPorIds(Collection<UUID> ids) {
+        if (ids.isEmpty()) {
+            return List.of();
+        }
+        return repositorio.buscarConCorreoPorIds(ids).stream()
+                .map(fila -> new CandidatoConCuenta(mapper.aDominio(fila.candidato()), fila.email()))
+                .toList();
     }
 }

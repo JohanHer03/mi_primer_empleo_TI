@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-11-17 · Semanas 4 y 5 completas: MVP del candidato desplegado y probado en producción; semana 6 en curso: contrato de HU-08, HU-09 y pantallas del administrador propuesto
+Última actualización: 2026-11-17 · Semanas 4 y 5 completas: MVP del candidato desplegado y probado en producción; semana 6 en curso: backend de HU-08 y HU-09 listo; siguen las pantallas de postulantes y del administrador
 
 ## Propósito
 
@@ -49,6 +49,7 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-11-17 | Los postulantes se ordenan en la base (`compatibilidad desc, fecha asc, id`) y sus perfiles se cargan con una consulta por página (`buscarConCuentaPorIds`) y otra al catálogo | La compatibilidad guardada sí es columna (a diferencia de la búsqueda), así que se pagina en la base sin cargar todas las postulaciones |
 | 2026-11-17 | Los estados de la postulación avanzan de uno en uno (`ENVIADA → EN_REVISION → ENTREVISTA → CONTRATADO`, `RECHAZADA` desde los tres primeros) y pedir el mismo estado responde 409 | Es la lectura estricta de la regla 5; un doble clic no pasa como éxito silencioso y el historial de la postulación es coherente |
 | 2026-11-17 | La empresa ve el correo y el perfil completo del candidato solo en los postulantes de sus vacantes | Es el medio de contacto del MVP (sin notificaciones) y el candidato decidió compartirlo al postularse |
 | 2026-11-16 | El detalle de la vacante pide en paralelo `GET /api/vacantes/{id}` y la compatibilidad, y esta última va bajo la clave de la búsqueda en TanStack Query; "Postularme" es un hook compartido (`usePostularse`) | Al cambiar habilidades o postularse se recalcula también el detalle, y la búsqueda y el detalle confirman y manejan el 409 igual |
@@ -141,7 +142,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Compatibilidad y "lo que te falta" (HU-04; contrato 6.1) | Hecho (PR #28) | `GET /api/vacantes/{id}/compatibilidad` (CANDIDATO): porcentaje actual, cada habilidad con el nivel del candidato y `cumple`, y la postulación si existe; también para vacantes cerradas. 232 pruebas; probado contra Supabase con la carpeta Compatibilidad de Postman (4 peticiones, 11 aserciones) |
 | Frontend fase 4: detalle con compatibilidad (HU-04) | Hecho (PR #29) | `/candidato/vacantes/:id`: datos de la vacante, porcentaje de hoy, "lo que te falta" y lo que ya cumple, postularse o el estado de la postulación (con la compatibilidad de hoy y la guardada si difieren). Enlazado desde la búsqueda, el inicio y mis postulaciones. Probado en modo simulado, contra el backend local y en producción |
 | Prueba de punta a punta en producción (semana 5) | Hecho (2026-11-17) | Deploy del #29 en READY. Con una cuenta de candidato `@example.com` (la contraseña la puso el usuario): habilidades, búsqueda (100 % y 25 %), detalle con "lo que te falta", postularse desde el detalle y mis postulaciones. Registros de Vercel sin advertencias ni errores. Pendiente de pulido: con unos 800 px de ancho el menú del encabezado parte "Mis postulaciones" en dos líneas |
-| Contrato de la fase 5: gestión de postulantes y administración (semana 6) | Propuesto en la rama `docs/contrato-semana6` | Sección 7 de `docs/contrato-api.md`: `GET /api/vacantes/{id}/postulaciones` (EMPRESA dueña, ordenados por la compatibilidad guardada) y `PATCH /api/postulaciones/{id}/estado` con las transiciones de la regla 5; las pantallas del administrador usan los endpoints de 4.1 y 4.3 |
+| Contrato de la fase 5: gestión de postulantes y administración (semana 6) | Acordado (PR #31) | Sección 7 de `docs/contrato-api.md`: `GET /api/vacantes/{id}/postulaciones` (EMPRESA dueña, ordenados por la compatibilidad guardada) y `PATCH /api/postulaciones/{id}/estado` con las transiciones de la regla 5; las pantallas del administrador usan los endpoints de 4.1 y 4.3 |
+| Gestión de postulantes (HU-08 y HU-09; contrato 7.1 y 7.2) | Hecho en la rama `feat/backend-gestion-postulaciones` | `GET /api/vacantes/{id}/postulaciones` (EMPRESA dueña, por compatibilidad guardada y fecha, con el perfil del candidato) y `PATCH /api/postulaciones/{id}/estado` con la regla 5 en `EstadoPostulacion.siguientes()` y `Postulacion.cambiarEstado`. 270 pruebas; probado contra Supabase con la carpeta Gestión de postulaciones de Postman (13 peticiones, 27 aserciones) |
 | Frontend fases 5 y 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API), V3 (ajustes de revisión) y V4 (nombre de habilidad único sin distinguir mayúsculas y catálogo inicial de 35 habilidades) aplicadas en Supabase (PostgreSQL 17). Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
