@@ -10,7 +10,8 @@ Se completa antes de cada fase del plan (`docs/plan-frontend.md`). Las rutas gen
 | Endpoints que faltan en la fundamentación | **Acordado** (2026-10-27). Sus DTOs completos se detallan antes de cada fase |
 | Fase 2: habilidades, empresas y vacantes (semana 3) | **Acordado** (2026-10-27, PR #16). Implementado: backend 4.1 a 4.4 y pantallas de empresa |
 | Fase 3: candidato y postulaciones (semana 4) | **Acordado** (2026-11-04, PR #21). Precisa 3.3 y adelanta `CalculadoraCompatibilidad`. Implementado: backend 5.1 a 5.6 (PR #22 a #25) y pantallas del candidato (PR #26) |
-| Fase 4: compatibilidad y "lo que te falta" (semana 5) | **Acordado** (2026-11-16, PR #27). Precisa `GET /api/vacantes/{id}/compatibilidad` de la fundamentación. Implementado: backend 6.1 (PR #28) y pantalla de detalle |
+| Fase 4: compatibilidad y "lo que te falta" (semana 5) | **Acordado** (2026-11-16, PR #27). Precisa `GET /api/vacantes/{id}/compatibilidad` de la fundamentación. Implementado: backend 6.1 (PR #28) y pantalla de detalle (PR #29); probado en producción (PR #30) |
+| Fase 5: gestión de postulantes y administración (semana 6) | **Propuesta** (2026-11-17). Precisa `GET /api/vacantes/{id}/postulaciones` y `PATCH /api/postulaciones/{id}/estado` de la fundamentación |
 
 Cuando el backend apruebe una sección, se cambia su estado a **Acordado** y cualquier cambio posterior se hace con un pull request que toque este archivo.
 
@@ -691,3 +692,102 @@ y la compatibilidad no le interesa a la empresa.
   "Mis postulaciones". Primero con API simulada que siga esta sección.
 - **Despliegue:** al fusionar, prueba de punta a punta en producción con una cuenta de candidato de prueba
   (registro, habilidades, búsqueda, detalle y postularse) y revisión de los registros de Vercel.
+
+---
+
+## 7. Fase 5: gestión de postulantes y administración (semana 6: HU-08, HU-09 y HU-10)
+
+Entregable: la empresa ve los postulantes de cada vacante ordenados por compatibilidad, revisa su perfil y avanza
+su postulación por los estados de la regla 5; el candidato ve el cambio en "Mis postulaciones". El administrador
+gestiona el catálogo y verifica empresas desde sus pantallas. Con esto el MVP queda completo (versión candidata).
+
+### 7.1 `GET /api/vacantes/{id}/postulaciones?estado=ENVIADA&page=0&size=10` — EMPRESA (HU-08)
+
+Postulantes de una vacante **de la empresa del token** (regla 4). `estado` es opcional.
+Responde `PaginaDto<Postulante>`, ordenado por **compatibilidad guardada** de mayor a menor (regla 6) y, con empate,
+por fecha de postulación (primero quien se postuló antes):
+
+```json
+{
+  "id": "…",
+  "fecha": "2026-11-10T14:05:00Z",
+  "estado": "EN_REVISION",
+  "compatibilidad": 60.0,
+  "candidato": {
+    "id": "…",
+    "nombres": "Laura",
+    "apellidos": "Gómez Restrepo",
+    "email": "laura.gomez@udea.edu.co",
+    "estadoAcademico": "ESTUDIANTE",
+    "semestre": 9,
+    "universidad": "Universidad de Antioquia",
+    "programa": "Ingeniería de Sistemas",
+    "ciudad": "Medellín",
+    "githubUrl": "https://github.com/lauragomez",
+    "resumen": "Me interesa el desarrollo backend con Java…",
+    "habilidades": [
+      { "habilidadId": "…", "nombre": "Java", "categoria": "LENGUAJE", "nivel": "BASICO" }
+    ]
+  }
+}
+```
+
+| Código | Cuándo |
+| --- | --- |
+| 200 `PaginaDto<Postulante>` | También para vacantes cerradas: la empresa sigue gestionando a quienes se postularon |
+| 400 | `estado` desconocido, o `page`/`size` fuera de rango |
+| 403 `"La vacante pertenece a otra empresa"` | Regla 4 |
+| 403 | CANDIDATO o ADMIN |
+| 404 `"La vacante no existe"` | |
+
+- `candidato` tiene el mismo formato que `CandidatoPerfil` (5.1) con sus habilidades **de hoy**; `compatibilidad` es la
+  que se guardó al postularse. Para marcar qué le falta frente a la vacante, el frontend cruza esas habilidades con las
+  de `GET /api/vacantes/{id}` (4.4), que ya consulta para el encabezado.
+- El correo es visible solo para las empresas a cuyas vacantes se postuló: es el medio de contacto (sin notificaciones
+  por correo en el MVP).
+
+### 7.2 `PATCH /api/postulaciones/{id}/estado` — EMPRESA (HU-09, reglas 4 y 5)
+
+Cuerpo: `{ "estado": "EN_REVISION" }` (`@NotNull`). Responde 200 con el `Postulante` actualizado (formato de 7.1).
+
+Transiciones permitidas (regla 5), una a la vez:
+
+| Desde | Puede pasar a |
+| --- | --- |
+| `ENVIADA` | `EN_REVISION`, `RECHAZADA` |
+| `EN_REVISION` | `ENTREVISTA`, `RECHAZADA` |
+| `ENTREVISTA` | `CONTRATADO`, `RECHAZADA` |
+| `CONTRATADO`, `RECHAZADA` | Ninguno (estados finales) |
+
+| Código | Cuándo |
+| --- | --- |
+| 200 `Postulante` | Transición válida |
+| 400 | Falta `estado` o no es un valor conocido |
+| 403 `"La postulación pertenece a otra empresa"` | La vacante de la postulación es de otra empresa (regla 4) |
+| 403 | CANDIDATO o ADMIN |
+| 404 `"La postulación no existe"` | |
+| 409 `"Una postulación ENVIADA solo puede pasar a EN_REVISION o RECHAZADA"` | Transición no permitida; el mensaje cambia según el estado actual. Para un estado final: `"Una postulación CONTRATADO ya no cambia de estado"` |
+
+- Pedir el **mismo estado** que ya tiene es una transición no permitida (409): así un doble clic no se toma como éxito silencioso.
+- Se puede cambiar el estado aunque la vacante esté cerrada: cerrar solo detiene las postulaciones nuevas (regla 2).
+- La regla vive en el dominio (`EstadoPostulacion.puedePasarA` o equivalente), con pruebas de todas las transiciones.
+
+### 7.3 Administración (HU-10)
+
+No hay endpoints nuevos: las pantallas del administrador usan los de 4.1 (`GET` y `POST /api/habilidades`) y
+4.3 (`GET /api/empresas?verificada=` y `PATCH /api/empresas/{id}/verificar`), ya implementados y probados.
+
+### 7.4 Postman y frontend
+
+- **Postman** (skill `endpoint-postman`): carpeta Gestión de postulaciones. La empresa de Autenticación lista los
+  postulantes de la práctica de la carpeta Búsqueda (200, ordenados, con el candidato) y filtra por estado; otra empresa
+  pide la misma lista (403); el candidato la pide (403). Cambios de estado: `ENVIADA → EN_REVISION` (200),
+  `EN_REVISION → CONTRATADO` (409), `EN_REVISION → ENTREVISTA → CONTRATADO` (200), `CONTRATADO → RECHAZADA` (409),
+  postulación inexistente (404), otra empresa (403); y "Mis postulaciones" del candidato muestra `CONTRATADO`.
+- **Frontend** (fase 5 de `docs/plan-frontend.md`):
+  - `/empresa/vacantes/:id/postulantes`: encabezado de la vacante, filtro por estado, postulantes ordenados con su
+    compatibilidad, perfil del candidato (habilidades marcadas contra las de la vacante, GitHub, resumen y correo) y
+    botones solo con las transiciones permitidas; "Rechazar" y "Contratar" piden confirmación.
+  - `/admin/habilidades`: catálogo agrupado por categoría y formulario para crear (409 si se repite).
+  - `/admin/empresas`: empresas por verificar (y verificadas, con filtro), paginadas, con botón "Verificar".
+  - Primero con API simulada que siga esta sección.
