@@ -14,6 +14,7 @@ Fundamentación completa (datos, historias de usuario, endpoints, plan): ver `do
 /backend    Spring Boot 3 + Java 21 (Maven), arquitectura hexagonal
 /frontend   React + Vite + TypeScript
 /postman    Colección y entornos exportados
+/scripts    Utilidades (datos de demostración para la sustentación)
 /docs       Fundamentación y diagramas
 vercel.json         Un proyecto de Vercel con dos servicios en contenedor (backend y frontend)
 docker-compose.yml  Las mismas imágenes, para probar en local
