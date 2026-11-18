@@ -30,7 +30,12 @@ export function LayoutApp() {
           </ul>
           <div className={estilos.usuario}>
             <span>{sesion.email}</span>
-            <button type="button" className="boton boton-secundario" onClick={cerrarSesion}>
+            <button
+              type="button"
+              className="boton boton-secundario"
+              onClick={cerrarSesion}
+              title={`Sesión iniciada como ${sesion.email}`}
+            >
               Cerrar sesión
             </button>
           </div>
