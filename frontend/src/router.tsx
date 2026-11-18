@@ -1,28 +1,28 @@
+import type { ComponentType } from 'react'
 import { createBrowserRouter, Navigate } from 'react-router'
 import { InicioSegunSesion } from './auth/InicioSegunSesion'
 import { RutaProtegida, SoloSinSesion } from './auth/RutaProtegida'
 import { ErrorDeRuta } from './components/ErrorDeRuta'
+import { Cargando } from './components/Estados'
 import { LayoutApp } from './layouts/LayoutApp'
 import { LayoutPublico } from './layouts/LayoutPublico'
-import EmpresasPorVerificar from './pages/admin/EmpresasPorVerificar'
-import Habilidades from './pages/admin/Habilidades'
-import BuscarVacantes from './pages/candidato/BuscarVacantes'
-import DetalleVacante from './pages/candidato/DetalleVacante'
-import InicioCandidato from './pages/candidato/InicioCandidato'
-import MisPostulaciones from './pages/candidato/MisPostulaciones'
-import PerfilCandidato from './pages/candidato/PerfilCandidato'
-import FormularioVacante from './pages/empresa/FormularioVacante'
-import InicioEmpresa from './pages/empresa/InicioEmpresa'
-import MisVacantes from './pages/empresa/MisVacantes'
-import PerfilEmpresa from './pages/empresa/PerfilEmpresa'
-import Postulantes from './pages/empresa/Postulantes'
 import Login from './pages/publico/Login'
 import NoEncontrada from './pages/publico/NoEncontrada'
 import Registro from './pages/publico/Registro'
 
+/**
+ * Las páginas de cada rol se cargan al entrar a ellas (división del bundle por rutas): quien visita la landing
+ * no descarga las pantallas de la empresa ni del administrador. Las públicas van en el bundle inicial.
+ */
+const pagina = (cargar: () => Promise<{ default: ComponentType }>) => async () => ({
+  Component: (await cargar()).default,
+})
+
 export const router = createBrowserRouter([
   {
     errorElement: <ErrorDeRuta />,
+    // Se ve solo si se recarga directamente una ruta cuya página aún no se descargó
+    hydrateFallbackElement: <Cargando />,
     children: [
       { index: true, element: <InicioSegunSesion /> },
       {
@@ -44,11 +44,11 @@ export const router = createBrowserRouter([
           {
             element: <LayoutApp />,
             children: [
-              { index: true, element: <InicioCandidato /> },
-              { path: 'perfil', element: <PerfilCandidato /> },
-              { path: 'vacantes', element: <BuscarVacantes /> },
-              { path: 'vacantes/:id', element: <DetalleVacante /> },
-              { path: 'postulaciones', element: <MisPostulaciones /> },
+              { index: true, lazy: pagina(() => import('./pages/candidato/InicioCandidato')) },
+              { path: 'perfil', lazy: pagina(() => import('./pages/candidato/PerfilCandidato')) },
+              { path: 'vacantes', lazy: pagina(() => import('./pages/candidato/BuscarVacantes')) },
+              { path: 'vacantes/:id', lazy: pagina(() => import('./pages/candidato/DetalleVacante')) },
+              { path: 'postulaciones', lazy: pagina(() => import('./pages/candidato/MisPostulaciones')) },
             ],
           },
         ],
@@ -60,12 +60,12 @@ export const router = createBrowserRouter([
           {
             element: <LayoutApp />,
             children: [
-              { index: true, element: <InicioEmpresa /> },
-              { path: 'perfil', element: <PerfilEmpresa /> },
-              { path: 'vacantes', element: <MisVacantes /> },
-              { path: 'vacantes/nueva', element: <FormularioVacante /> },
-              { path: 'vacantes/:id/editar', element: <FormularioVacante /> },
-              { path: 'vacantes/:id/postulantes', element: <Postulantes /> },
+              { index: true, lazy: pagina(() => import('./pages/empresa/InicioEmpresa')) },
+              { path: 'perfil', lazy: pagina(() => import('./pages/empresa/PerfilEmpresa')) },
+              { path: 'vacantes', lazy: pagina(() => import('./pages/empresa/MisVacantes')) },
+              { path: 'vacantes/nueva', lazy: pagina(() => import('./pages/empresa/FormularioVacante')) },
+              { path: 'vacantes/:id/editar', lazy: pagina(() => import('./pages/empresa/FormularioVacante')) },
+              { path: 'vacantes/:id/postulantes', lazy: pagina(() => import('./pages/empresa/Postulantes')) },
             ],
           },
         ],
@@ -78,8 +78,8 @@ export const router = createBrowserRouter([
             element: <LayoutApp />,
             children: [
               { index: true, element: <Navigate to="habilidades" replace /> },
-              { path: 'habilidades', element: <Habilidades /> },
-              { path: 'empresas', element: <EmpresasPorVerificar /> },
+              { path: 'habilidades', lazy: pagina(() => import('./pages/admin/Habilidades')) },
+              { path: 'empresas', lazy: pagina(() => import('./pages/admin/EmpresasPorVerificar')) },
             ],
           },
         ],

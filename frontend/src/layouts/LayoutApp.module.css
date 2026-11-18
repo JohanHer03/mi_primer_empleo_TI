@@ -30,10 +30,13 @@
 }
 
 .enlace {
+  display: inline-block;
   padding: var(--espacio-1) var(--espacio-2);
   border-radius: var(--radio);
   color: var(--color-texto-suave);
   text-decoration: none;
+  /* "Mis postulaciones" no debe partirse en dos líneas */
+  white-space: nowrap;
 }
 
 .enlace:hover {
@@ -48,6 +51,7 @@
 
 .usuario {
   display: flex;
+  margin-left: auto;
   align-items: center;
   gap: var(--espacio-3);
   font-size: 0.9rem;
@@ -60,10 +64,17 @@
   padding: var(--espacio-5) var(--espacio-4);
 }
 
-@media (max-width: 640px) {
+/* Con anchos medianos el menú no cabe junto al correo: pasa a su propia fila */
+@media (max-width: 960px) {
   .menu {
     order: 3;
     flex-basis: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .barra {
+    gap: var(--espacio-2) var(--espacio-3);
   }
 
   .usuario span {
