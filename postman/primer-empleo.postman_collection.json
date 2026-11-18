@@ -3438,6 +3438,652 @@
       ]
     },
     {
+      "name": "Gestión de postulaciones",
+      "description": "Postulantes de una vacante y cambio de estado (7.1 y 7.2, HU-08 y HU-09, reglas 4 y 5). La empresa de Autenticación gestiona la postulación que el candidato envió en la carpeta Postulaciones a la práctica de la carpeta Búsqueda.",
+      "item": [
+        {
+          "name": "Postulantes de la práctica (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteBusquedaId}}/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteBusquedaId}}",
+                "postulaciones"
+              ]
+            },
+            "description": "Guarda postulacionId para los cambios de estado.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "const pagina = pm.response.json();",
+                  "pm.test(\"Un postulante\", () => pm.expect(pagina.totalElementos).to.eql(1));",
+                  "const postulante = pagina.contenido[0];",
+                  "pm.collectionVariables.set(\"postulacionId\", postulante.id);",
+                  "pm.test(\"Con la compatibilidad guardada\", () => pm.expect(postulante.compatibilidad).to.eql(66.7));",
+                  "pm.test(\"Con el perfil del candidato\", () => {",
+                  "    pm.expect(postulante.candidato.email).to.eql(pm.collectionVariables.get(\"emailCandidato\"));",
+                  "    pm.expect(postulante.candidato.habilidades).to.have.lengthOf(2);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Postulantes en revisión (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteBusquedaId}}/postulaciones?estado=EN_REVISION",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteBusquedaId}}",
+                "postulaciones"
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "EN_REVISION"
+                }
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Ninguno todavía\", () => pm.expect(pm.response.json().contenido).to.eql([]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Postulantes de una vacante de otra empresa (403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteBusquedaId}}/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteBusquedaId}}",
+                "postulaciones"
+              ]
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOtraEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Mensaje: La vacante pertenece a otra empresa\", () => pm.expect(pm.response.json().mensaje).to.eql(\"La vacante pertenece a otra empresa\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Postulantes como candidato (403)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/vacantes/{{vacanteBusquedaId}}/postulaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "vacantes",
+                "{{vacanteBusquedaId}}",
+                "postulaciones"
+              ]
+            },
+            "description": "Usa el token del candidato de Autenticación."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pasar a EN_REVISION (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/{{postulacionId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "{{postulacionId}}",
+                "estado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_REVISION\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Queda EN_REVISION\", () => pm.expect(pm.response.json().estado).to.eql(\"EN_REVISION\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Saltar a CONTRATADO (409)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/{{postulacionId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "{{postulacionId}}",
+                "estado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"CONTRATADO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Mensaje: Una postulación EN_REVISION solo puede pasar a ENTREVISTA o RECHAZADA\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Una postulación EN_REVISION solo puede pasar a ENTREVISTA o RECHAZADA\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cambiar estado como otra empresa (403)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/{{postulacionId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "{{postulacionId}}",
+                "estado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"ENTREVISTA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenOtraEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 403 Forbidden\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Mensaje: La postulación pertenece a otra empresa\", () => pm.expect(pm.response.json().mensaje).to.eql(\"La postulación pertenece a otra empresa\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pasar a ENTREVISTA (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/{{postulacionId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "{{postulacionId}}",
+                "estado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"ENTREVISTA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Queda ENTREVISTA\", () => pm.expect(pm.response.json().estado).to.eql(\"ENTREVISTA\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Pasar a CONTRATADO (200)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/{{postulacionId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "{{postulacionId}}",
+                "estado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"CONTRATADO\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Queda CONTRATADO\", () => pm.expect(pm.response.json().estado).to.eql(\"CONTRATADO\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rechazar a un contratado (409)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/{{postulacionId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "{{postulacionId}}",
+                "estado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"RECHAZADA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 409 Conflict\", () => pm.response.to.have.status(409));",
+                  "pm.test(\"Mensaje: Una postulación CONTRATADO ya no cambia de estado\", () => pm.expect(pm.response.json().mensaje).to.eql(\"Una postulación CONTRATADO ya no cambia de estado\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cambiar estado de una postulación inexistente (404)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/00000000-0000-0000-0000-000000000000/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "00000000-0000-0000-0000-000000000000",
+                "estado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_REVISION\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 404 Not Found\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Mensaje: La postulación no existe\", () => pm.expect(pm.response.json().mensaje).to.eql(\"La postulación no existe\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cambiar estado sin estado (400)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/{{postulacionId}}/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "{{postulacionId}}",
+                "estado"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenEmpresa}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 400 Bad Request\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Mensaje: estado: es obligatorio\", () => pm.expect(pm.response.json().mensaje).to.eql(\"estado: es obligatorio\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mis postulaciones muestra CONTRATADO (200)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/postulaciones/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "postulaciones",
+                "me"
+              ]
+            },
+            "description": "Usa el token del candidato de Autenticación."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Responde 200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"El candidato ve CONTRATADO\", () => pm.expect(pm.response.json().contenido[0].estado).to.eql(\"CONTRATADO\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "Seguridad",
       "item": [
         {
@@ -3542,6 +4188,10 @@
     },
     {
       "key": "vacanteBusquedaId",
+      "value": ""
+    },
+    {
+      "key": "postulacionId",
       "value": ""
     }
   ]

@@ -28,6 +28,11 @@ public interface PostulacionJpaRepository extends JpaRepository<PostulacionEntit
 
     Optional<PostulacionEntity> findByCandidatoIdAndVacanteId(UUID candidatoId, UUID vacanteId);
 
+    /** Postulantes de una vacante (HU-08); el orden lo da el {@link Pageable}. */
+    Page<PostulacionEntity> findByVacanteId(UUID vacanteId, Pageable pagina);
+
+    Page<PostulacionEntity> findByVacanteIdAndEstado(UUID vacanteId, EstadoPostulacion estado, Pageable pagina);
+
     @Query(value = SELECT_CON_VACANTE + "where p.candidatoId = :candidatoId order by p.fecha desc, p.id desc",
             countQuery = "select count(p) from PostulacionEntity p where p.candidatoId = :candidatoId")
     Page<PostulacionConVacanteFila> listarDeCandidato(@Param("candidatoId") UUID candidatoId, Pageable pagina);

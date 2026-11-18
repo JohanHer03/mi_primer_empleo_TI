@@ -18,4 +18,9 @@ public class AccesoDenegadoException extends RuntimeException {
     public static AccesoDenegadoException vacanteAjena() {
         return new AccesoDenegadoException("La vacante pertenece a otra empresa");
     }
+
+    /** Regla 4: una empresa solo gestiona las postulaciones de sus propias vacantes. */
+    public static AccesoDenegadoException postulacionAjena() {
+        return new AccesoDenegadoException("La postulación pertenece a otra empresa");
+    }
 }
