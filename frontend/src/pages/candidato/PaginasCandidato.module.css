@@ -1,44 +1,5 @@
 /* Estilos propios de las pantallas del candidato (fase 3); los comunes están en components/Paginas.module.css. */
 
-/* Indicador de compatibilidad */
-
-.compatibilidad {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 5.5rem;
-  padding: var(--espacio-2) var(--espacio-3);
-  border-radius: var(--radio);
-  text-align: center;
-}
-
-.compatibilidadValor {
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-.compatibilidadTexto {
-  font-size: 0.75rem;
-}
-
-.compatibilidadalta {
-  background: color-mix(in srgb, var(--color-exito) 14%, transparent);
-  color: var(--color-exito);
-}
-
-.compatibilidadmedia {
-  background: var(--color-advertencia-fondo);
-  color: var(--color-advertencia);
-}
-
-.compatibilidadbaja {
-  background: var(--color-fondo);
-  color: var(--color-texto-suave);
-  border: 1px solid var(--color-borde);
-}
-
 /* Tarjetas de vacantes y postulaciones */
 
 .tarjeta {

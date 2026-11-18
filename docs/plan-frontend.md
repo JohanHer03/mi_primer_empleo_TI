@@ -24,7 +24,7 @@ de `docs/fundamentacion.md`. Cada fase termina con `npm run lint` y `npm run bui
 | 2. Empresa | 3 | Perfil de empresa (aviso si no está verificada), mis vacantes, publicar, editar y cerrar | HU-06, HU-07 | Hecho; probado en modo simulado y contra el backend local (publicar, editar y cerrar) |
 | 3. Candidato | 4 | Perfil y habilidades con nivel, búsqueda con filtros y paginación, postularse, mis postulaciones | HU-02, HU-03, HU-05 | Hecho; probado en modo simulado y contra el backend local (registro, habilidades, búsqueda, postularse y mis postulaciones) |
 | 4. Compatibilidad | 5 | Detalle de vacante con porcentaje y "lo que te falta"; despliegue en Vercel | HU-04 | Hecho; probado en modo simulado, contra el backend local y en producción (2026-11-17) |
-| 5. Gestión y admin | 6 | Postulantes ordenados y cambio de estado; catálogo de habilidades y verificación de empresas | HU-08, HU-09, HU-10 | Pendiente |
+| 5. Gestión y admin | 6 | Postulantes ordenados y cambio de estado; catálogo de habilidades y verificación de empresas | HU-08, HU-09, HU-10 | Hecho; probado en modo simulado y contra el backend local (verificar empresa, postulantes y cambios de estado) |
 | 6. Pulido | 6–7 | Estados de carga y error, diseño visual, versión móvil, pruebas de uso | — | Pendiente |
 
 ## Pantallas y rutas
