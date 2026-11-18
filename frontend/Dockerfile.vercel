@@ -22,4 +22,7 @@ COPY --from=build /app/dist /usr/share/nginx/html
 
 # Vercel indica el puerto en PORT (80 por defecto); el contenedor debe escuchar en él
 ENV PORT=80
+# Orígenes extra para connect-src de la CSP (nginx.conf.template). Vacío en Vercel: la API comparte dominio.
+# Debe existir aunque esté vacío: la imagen de nginx solo reemplaza las variables definidas.
+ENV CSP_CONNECT_EXTRA=""
 CMD ["nginx", "-g", "daemon off;"]
