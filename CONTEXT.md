@@ -3,7 +3,7 @@
 Este archivo responde *qué* estamos construyendo, *por qué* y *en qué punto vamos*.
 Las reglas de *cómo* trabajar están en `CLAUDE.md`. Actualízalo al cerrar cada funcionalidad o decisión.
 
-Última actualización: 2026-11-16 · Semana 4 completa (backend y frontend del candidato); semana 5 en curso: HU-04 completa (backend y pantalla de detalle); falta la prueba de punta a punta en producción
+Última actualización: 2026-11-17 · Semanas 4 y 5 completas: MVP del candidato desplegado y probado en producción; sigue la semana 6 (HU-08, HU-09 y pantallas del administrador)
 
 ## Propósito
 
@@ -137,7 +137,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Frontend fase 3: candidato (HU-02, HU-03, HU-05) | Hecho (PR #26) | Inicio con las vacantes más compatibles, perfil (datos y habilidades con nivel), búsqueda con filtros, orden y paginación en la URL y botón "Postularme", y mis postulaciones por estado. Mocks de candidatos, búsqueda y postulaciones. Probado en modo simulado y contra el backend local |
 | Contrato de la fase 4: compatibilidad y "lo que te falta" (semana 5) | Acordado (PR #27) | Sección 6 de `docs/contrato-api.md`: `GET /api/vacantes/{id}/compatibilidad` (CANDIDATO) con el porcentaje actual, todas las habilidades de la vacante con `cumple` y la postulación si existe; la pantalla usa también `GET /api/vacantes/{id}` |
 | Compatibilidad y "lo que te falta" (HU-04; contrato 6.1) | Hecho (PR #28) | `GET /api/vacantes/{id}/compatibilidad` (CANDIDATO): porcentaje actual, cada habilidad con el nivel del candidato y `cumple`, y la postulación si existe; también para vacantes cerradas. 232 pruebas; probado contra Supabase con la carpeta Compatibilidad de Postman (4 peticiones, 11 aserciones) |
-| Frontend fase 4: detalle con compatibilidad (HU-04) | Hecho en la rama `feat/frontend-detalle-vacante` | `/candidato/vacantes/:id`: datos de la vacante, porcentaje de hoy, "lo que te falta" y lo que ya cumple, postularse o el estado de la postulación (con la compatibilidad de hoy y la guardada si difieren). Enlazado desde la búsqueda, el inicio y mis postulaciones. Probado en modo simulado y contra el backend local. Falta la prueba de punta a punta en producción |
+| Frontend fase 4: detalle con compatibilidad (HU-04) | Hecho (PR #29) | `/candidato/vacantes/:id`: datos de la vacante, porcentaje de hoy, "lo que te falta" y lo que ya cumple, postularse o el estado de la postulación (con la compatibilidad de hoy y la guardada si difieren). Enlazado desde la búsqueda, el inicio y mis postulaciones. Probado en modo simulado, contra el backend local y en producción |
+| Prueba de punta a punta en producción (semana 5) | Hecho (2026-11-17) | Deploy del #29 en READY. Con una cuenta de candidato `@example.com` (la contraseña la puso el usuario): habilidades, búsqueda (100 % y 25 %), detalle con "lo que te falta", postularse desde el detalle y mis postulaciones. Registros de Vercel sin advertencias ni errores. Pendiente de pulido: con unos 800 px de ancho el menú del encabezado parte "Mis postulaciones" en dos líneas |
 | Frontend fases 5 y 6 | Pendiente | Ver `docs/plan-frontend.md` |
 | Esquema y migraciones | Hecho | V1 (8 tablas), V2 (cierre de la Data API), V3 (ajustes de revisión) y V4 (nombre de habilidad único sin distinguir mayúsculas y catálogo inicial de 35 habilidades) aplicadas en Supabase (PostgreSQL 17). Las entidades JPA se crean con cada funcionalidad |
 | Despliegue de prueba en Vercel | Hecho | Proyecto `mi-primer-empleo-ti` (framework Services, región `pdx1`), conectado al repo: cada push despliega (`main` → producción). Front, API y Supabase funcionando en https://mi-primer-empleo-ti.vercel.app. Arranque en frío ~9 s, luego < 0,5 s |
