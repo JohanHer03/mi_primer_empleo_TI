@@ -49,6 +49,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 
 | Fecha | Decisión | Motivo |
 | --- | --- | --- |
+| 2026-11-18 | CSP estricta en el nginx del frontend (`default-src 'self'`, sin inline, `frame-ancestors 'none'`); `CSP_CONNECT_EXTRA` agrega el origen de la API cuando no comparte dominio (docker-compose) y el Dockerfile lo define vacío | El token vive en `localStorage`: la CSP es la defensa extra contra XSS. Las cabeceras van en el `server` y la caché usa `expires`, porque un `add_header` en una `location` anula los del `server` |
+| 2026-11-18 | No se crea el agente `escritor-pruebas` por ahora | Las pruebas se escriben con cada funcionalidad siguiendo `nueva-funcionalidad-hexagonal`; el agente no aporta para lo que queda |
 | 2026-11-18 | Los datos de demostración se cargan con un script de Node por la API (no con una migración); las contraseñas van en variables de entorno que pone el usuario | No deja hashes de contraseñas conocidas en el repo público ni mezcla datos de prueba con el esquema; el script se puede volver a correr sin duplicar |
 | 2026-11-18 | El backend local y producción usan la misma base de Supabase | Hallazgo: lo que se crea al probar en local (cuentas `@example.com`) se ve en producción. Para probar algo que escribe muchos datos se usa un PostgreSQL desechable en Docker |
 | 2026-11-18 | Las páginas de cada rol se cargan con `lazy` de React Router; las públicas (landing, login, registro) van en el bundle inicial | Quien entra a la landing no descarga las pantallas de empresa ni de administrador; la primera visita sigue siendo inmediata |
@@ -128,7 +130,8 @@ Las más recientes arriba. Una línea por decisión: fecha, decisión y motivo.
 | Fundamentación | Hecho | `docs/fundamentacion.md` |
 | CLAUDE.md y CONTEXT.md | Hecho | |
 | Archivos de despliegue | Hecho | `vercel.json`, `Dockerfile.vercel`, `docker-compose.yml` |
-| Skills y agentes de Claude Code | En curso | Hechos: skills `nueva-funcionalidad-hexagonal`, `migracion-flyway`, `pantalla-react` y `endpoint-postman`, agente `revisor-arquitectura`. Faltan los agentes `escritor-pruebas` y `revisor-seguridad` (semanas 4 y 5) |
+| Skills y agentes de Claude Code | Hecho | Skills `nueva-funcionalidad-hexagonal`, `migracion-flyway`, `pantalla-react` y `endpoint-postman`; agentes `revisor-arquitectura` y `revisor-seguridad` (solo lectura). `escritor-pruebas` no se crea por ahora (decisión del 2026-11-18) |
+| Revisión de seguridad (2026-11-18) | Hecha, sin hallazgos graves | Con la lista de `revisor-seguridad`: rutas públicas, roles por endpoint, propiedad desde el token, JWT, BCrypt, secretos, errores, validación, consultas, CORS, Supabase solo como PostgreSQL y frontend. Cabeceras de seguridad del frontend agregadas en `nginx.conf.template` (CSP, `X-Frame-Options`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`). Pendiente de severidad media: límite de intentos en `/api/auth/login` (regla de límite de peticiones en el firewall de Vercel, la configura el usuario). Baja: la contraseña de prueba de Postman es pública (no correr la colección contra producción sin limpiar después) |
 | Proyecto Spring Boot | Hecho | Paquetes hexagonales, errores uniformes, `SecurityConfig` sin estado (sin JWT aún), CORS, Swagger. Imagen `Dockerfile.vercel` probada con `docker compose up --build backend` (responde 401 en JSON) |
 | Proyecto React (fase 0 de `docs/plan-frontend.md`) | Hecho | Vite + React 19 + TS, cliente único de la API, sesión con JWT, rutas y layouts por rol, 14 pantallas marcador, login simulado. Probado con `docker compose` junto al backend |
 | Landing pública en `/` | Hecho | Problema con cifras del DANE, diferencial, cómo funciona, empresas y ODS 8, según `docs/fundamentacion.md`. Con sesión, `/` sigue llevando al inicio del rol |
@@ -176,7 +179,7 @@ Se instalan desde el directorio de plugins de Anthropic **a medida que se necesi
 | supabase | Semana 1 | PostgreSQL y consultar el esquema (sin su autenticación) | Instalado; su MCP necesita autorizarse con `/mcp` antes de usarlo |
 | code-review | Semana 3 | Revisión de pull requests | Ofrecido para instalar (2026-10-27); confirmar en el panel de plugins |
 | postman | Semana 3 | Colección y pruebas de la API | Ofrecido para instalar (2026-10-27); su MCP necesita una API key de Postman solo si se sincroniza con la nube. La colección del repo se prueba con `npx newman` sin cuenta |
-| frontend-design | Semana 6 | Pulir la interfaz | Pendiente de instalar |
+| frontend-design | Semana 6 | Pulir la interfaz | Instalado (2026-11-18) |
 
 Notas de uso:
 - **supabase**: trae skills y herramientas de Auth, Storage, Edge Functions y RLS que este proyecto tiene prohibidas. Usarlo solo para consultar el esquema y buenas prácticas de PostgreSQL; si se conecta su MCP, en modo **Read-only**: el esquema solo cambia con migraciones de Flyway.

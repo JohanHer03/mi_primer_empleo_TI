@@ -5,16 +5,28 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # Archivos con hash de Vite: caché larga
+    # Cabeceras de seguridad (revisión del 2026-11-18). Van en el server y ninguna location usa add_header:
+    # en nginx, un add_header dentro de una location anula todos los del server. La caché se maneja con expires.
+    #
+    # CSP: todo sale del propio dominio; en Vercel la API comparte dominio (/api), así que basta 'self'.
+    # CSP_CONNECT_EXTRA agrega orígenes para la API cuando no comparte dominio (docker-compose: http://localhost:8080);
+    # el Dockerfile lo define vacío para que la imagen de nginx siempre lo reemplace.
+    # Los estilos de React (prop style) se aplican por CSSOM y no los bloquea style-src 'self'.
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self' ${CSP_CONNECT_EXTRA}; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-Frame-Options "DENY" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+    # Archivos con hash de Vite: caché larga (Cache-Control: max-age de un año)
     location /assets/ {
         expires 1y;
-        add_header Cache-Control "public, immutable";
         try_files $uri =404;
     }
 
-    # SPA: cualquier ruta de React Router devuelve index.html
+    # SPA: cualquier ruta de React Router devuelve index.html, sin caché para recibir cada despliegue
     location / {
-        add_header Cache-Control "no-cache";
+        expires epoch;
         try_files $uri $uri/ /index.html;
     }
 }

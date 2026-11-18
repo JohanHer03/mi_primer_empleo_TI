@@ -143,7 +143,7 @@ Este archivo tiene prioridad sobre cualquier skill o plugin instalado. Si una sk
 
 - Plugins externos: `Java Backend Skills`, `supabase` (solo para PostgreSQL y consultar el esquema), `code-review`, `postman`, `frontend-design`.
 - Skills del proyecto en `.claude/skills/`: `nueva-funcionalidad-hexagonal`, `pantalla-react`, `migracion-flyway`, `endpoint-postman`.
-- Agentes del proyecto en `.claude/agents/`: `revisor-arquitectura`, `escritor-pruebas`, `revisor-seguridad`.
+- Agentes del proyecto en `.claude/agents/`: `revisor-arquitectura` y `revisor-seguridad`.
 
 ## Forma de trabajar
 
