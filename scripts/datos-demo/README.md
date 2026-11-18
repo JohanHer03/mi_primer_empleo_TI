@@ -28,7 +28,8 @@ habilidades por vacante, semestre solo para estudiantes) y que no haya correos, 
 
 ## 2. Cargar
 
-Antes, conviene borrar de Supabase las cuentas de prueba `@example.com` para que solo se vean los datos de demostración.
+Antes, conviene borrar de Supabase las cuentas de prueba `@example.com` para que solo se vean los datos de demostración:
+ver [`scripts/limpieza-pruebas`](../limpieza-pruebas/README.md).
 
 **Importante:** el backend local (`.env`) y producción usan **la misma base de Supabase**. Cargar contra el backend local
 o contra producción deja los datos en el mismo lugar: basta con correrlo una vez.
