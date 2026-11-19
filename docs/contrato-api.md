@@ -818,14 +818,19 @@ Cambia la contraseña **del usuario del token**. Cuerpo:
 | 400 `"contrasenaActual: no es correcta"` | La contraseña actual no coincide |
 | 400 `"contrasenaNueva: debe ser distinta de la actual"` | La nueva es igual a la actual |
 | 401 | Sin token o token inválido |
+| 403 `"Tu cuenta está desactivada"` | La actual es correcta pero la cuenta está desactivada (como en el login, 2.5) |
+| 404 `"El usuario no existe"` | El usuario del token ya no existe (por ejemplo, se borró con el SQL de limpieza) |
 
 - Una contraseña actual incorrecta responde **400, no 401**: el frontend cierra la sesión ante cualquier 401 y aquí la
   sesión sigue siendo válida. El mensaje empieza por el nombre del campo, como los demás 400, para marcarlo en el
   formulario.
-- El orden de validación es: Bean Validation (400), contraseña actual (400), política de la nueva (400) y nueva igual
-  a la actual (400). Así no se revela si la nueva cumple la política a quien no conoce la actual.
+- El orden de validación es: Bean Validation (400), contraseña actual (400), cuenta activa (403), política de la
+  nueva (400) y nueva igual a la actual (400). Así quien no conoce la actual no aprende nada más.
 - El JWT no guarda estado: los tokens emitidos antes del cambio siguen valiendo hasta que vencen (120 min), igual que
-  con una cuenta desactivada. El frontend no cierra la sesión al cambiar la contraseña.
+  con una cuenta desactivada. El frontend no cierra la sesión al cambiar la contraseña y el mensaje de éxito avisa que
+  las sesiones abiertas en otros dispositivos siguen activas hasta 2 horas.
+- La ruta debe tener un límite de peticiones en el firewall de Vercel, como `/api/auth/`: sin él, quien robe un token
+  puede probar contraseñas actuales sin límite mientras el token no venza.
 - La ruta no va bajo `/api/auth/**` porque esa ruta es pública.
 
 ### 8.2 Postman y frontend
