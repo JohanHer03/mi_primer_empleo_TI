@@ -22,6 +22,13 @@ class PoliticaContrasenaTest {
     }
 
     @Test
+    void deberiaUsarElCampoIndicadoEnElMensaje() {
+        assertThatThrownBy(() -> PoliticaContrasena.validar("corta", "contrasenaNueva"))
+                .isInstanceOf(DatosInvalidosException.class)
+                .hasMessage("contrasenaNueva: debe tener al menos 8 caracteres");
+    }
+
+    @Test
     void deberiaRechazarUnaContrasenaNula() {
         assertThatThrownBy(() -> PoliticaContrasena.validar(null))
                 .isInstanceOf(DatosInvalidosException.class);

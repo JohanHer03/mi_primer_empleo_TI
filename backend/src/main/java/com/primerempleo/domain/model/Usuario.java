@@ -24,6 +24,11 @@ public record Usuario(UUID id, String email, String passwordHash, Rol rol, boole
         return new Usuario(UUID.randomUUID(), email, passwordHash, rol, true, Instant.now());
     }
 
+    /** La misma cuenta con otra contraseña, que ya debe venir cifrada. */
+    public Usuario conContrasena(String nuevoPasswordHash) {
+        return new Usuario(id, email, nuevoPasswordHash, rol, activo, fechaCreacion);
+    }
+
     /**
      * El correo se guarda sin espacios y en minúsculas: Ana@Correo.com y ana@correo.com son la misma cuenta
      * (índice único sobre lower(email) de la migración V3).

@@ -35,12 +35,12 @@ de `docs/fundamentacion.md`. Cada fase termina con `npm run lint` y `npm run bui
 | `/login` | Iniciar sesión | público | 1 |
 | `/registro`, `/registro?tipo=empresa` | Crear cuenta (candidato o empresa) | público | 1 |
 | `/candidato` | Inicio | CANDIDATO | 3 |
-| `/candidato/perfil` | Mi perfil y habilidades | CANDIDATO | 3 |
+| `/candidato/perfil` | Mi perfil y habilidades; cambiar contraseña (contrato 8) | CANDIDATO | 3 |
 | `/candidato/vacantes` | Buscar vacantes | CANDIDATO | 3 |
 | `/candidato/vacantes/:id` | Detalle con compatibilidad | CANDIDATO | 4 |
 | `/candidato/postulaciones` | Mis postulaciones | CANDIDATO | 3 |
 | `/empresa` | Inicio | EMPRESA | 2 |
-| `/empresa/perfil` | Perfil de empresa | EMPRESA | 2 |
+| `/empresa/perfil` | Perfil de empresa; cambiar contraseña (contrato 8) | EMPRESA | 2 |
 | `/empresa/vacantes` | Mis vacantes | EMPRESA | 2 |
 | `/empresa/vacantes/nueva`, `/empresa/vacantes/:id/editar` | Formulario de vacante | EMPRESA | 2 |
 | `/empresa/vacantes/:id/postulantes` | Postulantes | EMPRESA | 5 |

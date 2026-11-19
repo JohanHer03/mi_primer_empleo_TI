@@ -7,6 +7,7 @@ import { actualizarMiPerfilCandidato, actualizarMisHabilidades } from '../../api
 import type { CandidatoHabilidad, CandidatoPerfil, Habilidad } from '../../api/tipos'
 import { idsDescripcion } from '../../components/accesibilidad'
 import { AvisoDemora } from '../../components/AvisoDemora'
+import { CambiarContrasena } from '../../components/CambiarContrasena'
 import { Campo } from '../../components/Campo'
 import { Cargando, MensajeError } from '../../components/Estados'
 import { aplicarErroresDeValidacion } from '../../components/erroresServidor'
@@ -126,6 +127,7 @@ export default function PerfilCandidato() {
           </dl>
           <FormularioHabilidades habilidades={perfil.data.habilidades} catalogo={catalogo.data} />
           <FormularioDatos perfil={perfil.data} />
+          <CambiarContrasena />
         </>
       )}
     </section>

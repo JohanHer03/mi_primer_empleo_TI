@@ -8,6 +8,7 @@ import type { EmpresaPerfil } from '../../api/tipos'
 import { idsDescripcion } from '../../components/accesibilidad'
 import { AvisoDemora } from '../../components/AvisoDemora'
 import { AvisoVerificacion } from '../../components/AvisoVerificacion'
+import { CambiarContrasena } from '../../components/CambiarContrasena'
 import { Campo } from '../../components/Campo'
 import { Cargando, MensajeError } from '../../components/Estados'
 import { aplicarErroresDeValidacion } from '../../components/erroresServidor'
@@ -41,7 +42,12 @@ export default function PerfilEmpresa() {
       <h1>Perfil de empresa</h1>
       {perfil.isPending && <Cargando texto="Cargando tu perfil…" />}
       {perfil.isError && <MensajeError error={perfil.error} alReintentar={() => perfil.refetch()} />}
-      {perfil.isSuccess && <FormularioPerfil perfil={perfil.data} />}
+      {perfil.isSuccess && (
+        <>
+          <FormularioPerfil perfil={perfil.data} />
+          <CambiarContrasena />
+        </>
+      )}
     </section>
   )
 }
