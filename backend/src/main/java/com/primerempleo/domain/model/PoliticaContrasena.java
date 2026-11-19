@@ -16,13 +16,19 @@ public final class PoliticaContrasena {
     private PoliticaContrasena() {
     }
 
+    /** Para el registro: el error sale en el campo {@code password}. */
     public static void validar(String contrasena) {
+        validar(contrasena, "password");
+    }
+
+    /** El error sale como "campo: mensaje" para que el frontend lo muestre bajo ese campo. */
+    public static void validar(String contrasena, String campo) {
         if (contrasena == null || contrasena.length() < CARACTERES_MINIMOS) {
-            throw new DatosInvalidosException("password: debe tener al menos 8 caracteres");
+            throw new DatosInvalidosException(campo + ": debe tener al menos 8 caracteres");
         }
         if (contrasena.getBytes(StandardCharsets.UTF_8).length > BYTES_MAXIMOS) {
             throw new DatosInvalidosException(
-                    "password: es demasiado larga (máximo 72 bytes; las tildes y la ñ ocupan 2)");
+                    campo + ": es demasiado larga (máximo 72 bytes; las tildes y la ñ ocupan 2)");
         }
     }
 }

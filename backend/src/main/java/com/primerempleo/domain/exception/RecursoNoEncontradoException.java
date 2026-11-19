@@ -9,6 +9,10 @@ public class RecursoNoEncontradoException extends RuntimeException {
         super(mensaje);
     }
 
+    public static RecursoNoEncontradoException usuario() {
+        return new RecursoNoEncontradoException("El usuario no existe");
+    }
+
     public static RecursoNoEncontradoException empresa() {
         return new RecursoNoEncontradoException("La empresa no existe");
     }

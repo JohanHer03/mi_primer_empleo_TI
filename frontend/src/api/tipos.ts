@@ -22,6 +22,12 @@ export interface LoginPeticion {
   password: string
 }
 
+/** PUT /api/usuarios/me/contrasena (contrato 8.1): responde 204 sin cuerpo. */
+export interface CambiarContrasenaPeticion {
+  contrasenaActual: string
+  contrasenaNueva: string
+}
+
 export interface RegistroCandidatoPeticion {
   email: string
   password: string

@@ -1,6 +1,7 @@
 import { ErrorApi } from '../cliente'
 import type {
   AuthRespuesta,
+  CambiarContrasenaPeticion,
   LoginPeticion,
   RegistroCandidatoPeticion,
   RegistroEmpresaPeticion,
@@ -8,7 +9,7 @@ import type {
 } from '../tipos'
 import { registrarPerfilCandidatoMock } from './candidatos'
 import { registrarPerfilEmpresaMock } from './empresas'
-import { esperar } from './utilidades'
+import { esperar, guardar, leerGuardado, usuarioActualMock } from './utilidades'
 
 // Simulación de /api/auth según docs/contrato-api.md, solo para VITE_USAR_MOCKS=true.
 // Las cuentas registradas se guardan en localStorage para que el login funcione después de recargar.
@@ -24,6 +25,8 @@ interface CuentaMock {
 
 const CLAVE_CUENTAS = 'primer-empleo.mock.cuentas'
 const CONTRASENA_DEMO = 'demo1234'
+// Las contraseñas cambiadas (contrato 8.1) se guardan aparte para que también sirva con las cuentas de demostración
+const CLAVE_CONTRASENAS = 'primer-empleo.mock.contrasenas'
 
 // Usuarios de demostración (ver frontend/README.md)
 const CUENTAS_DEMO: CuentaMock[] = [
@@ -60,7 +63,7 @@ export async function loginMock({ email, password }: LoginPeticion): Promise<Aut
   await esperar()
   const cuenta = todasLasCuentas().find((c) => c.email === normalizarEmail(email))
   // Mismo mensaje para correo inexistente y contraseña errónea (contrato 2.5)
-  if (!cuenta || cuenta.password !== password) {
+  if (!cuenta || contrasenaDe(cuenta) !== password) {
     throw new ErrorApi(401, 'Correo o contraseña incorrectos')
   }
   if (!cuenta.activo) throw new ErrorApi(403, 'Tu cuenta está desactivada')
@@ -91,6 +94,31 @@ export async function registrarEmpresaMock(datos: RegistroEmpresaPeticion): Prom
   guardarCuentaRegistrada(cuenta)
   registrarPerfilEmpresaMock(cuenta.id, cuenta.email, { ...datos, nit })
   return { token: crearTokenFalso(cuenta) }
+}
+
+/** Contrato 8.1: mismo orden de validación y mismos mensajes que CambioContrasenaService. */
+export async function cambiarContrasenaMock({ contrasenaActual, contrasenaNueva }: CambiarContrasenaPeticion): Promise<void> {
+  await esperar()
+  const { usuarioId: id } = usuarioActualMock()
+  const cuenta = todasLasCuentas().find((c) => c.id === id)
+  if (!cuenta) throw new ErrorApi(404, 'El usuario no existe')
+  if (contrasenaDe(cuenta) !== contrasenaActual) throw new ErrorApi(400, 'contrasenaActual: no es correcta')
+  if (contrasenaNueva.length < 8) throw new ErrorApi(400, 'contrasenaNueva: debe tener al menos 8 caracteres')
+  if (new TextEncoder().encode(contrasenaNueva).length > 72) {
+    throw new ErrorApi(400, 'contrasenaNueva: es demasiado larga (máximo 72 bytes; las tildes y la ñ ocupan 2)')
+  }
+  if (contrasenaNueva === contrasenaActual) {
+    throw new ErrorApi(400, 'contrasenaNueva: debe ser distinta de la actual')
+  }
+  guardar(CLAVE_CONTRASENAS, { ...leerContrasenasCambiadas(), [id]: contrasenaNueva })
+}
+
+function leerContrasenasCambiadas(): Record<string, string> {
+  return leerGuardado<Record<string, string>>(CLAVE_CONTRASENAS, () => ({}))
+}
+
+function contrasenaDe(cuenta: CuentaMock): string {
+  return leerContrasenasCambiadas()[cuenta.id] ?? cuenta.password
 }
 
 function validarCorreoLibre(email: string) {

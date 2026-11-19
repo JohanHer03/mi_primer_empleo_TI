@@ -7,7 +7,8 @@ const correo = z
   .trim()
   .pipe(z.email('Escribe un correo válido').max(255, 'Máximo 255 caracteres'))
 
-const contrasena = z
+/** Contraseña nueva (registro y cambio de contraseña, contrato 8.1). */
+export const contrasena = z
   .string()
   .min(8, 'Debe tener al menos 8 caracteres')
   .max(72, 'Máximo 72 caracteres')

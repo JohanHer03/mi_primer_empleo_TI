@@ -2,8 +2,11 @@ package com.primerempleo.application.port.out;
 
 import com.primerempleo.domain.model.Usuario;
 import java.util.Optional;
+import java.util.UUID;
 
 public interface UsuarioRepositoryPort {
+
+    Optional<Usuario> buscarPorId(UUID id);
 
     /** Busca sin distinguir mayúsculas (índice único sobre lower(email)). */
     boolean existePorEmail(String email);
@@ -16,4 +19,7 @@ public interface UsuarioRepositoryPort {
      * Para editar, agregar un método que cargue la entidad con findById y le copie los cambios.
      */
     Usuario crear(Usuario usuario);
+
+    /** Carga el usuario existente con findById y le copia solo el hash de la contraseña. */
+    Usuario actualizarContrasena(Usuario usuario);
 }
