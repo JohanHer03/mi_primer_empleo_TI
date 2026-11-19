@@ -791,3 +791,48 @@ No hay endpoints nuevos: las pantallas del administrador usan los de 4.1 (`GET` 
   - `/admin/habilidades`: catálogo agrupado por categoría y formulario para crear (409 si se repite).
   - `/admin/empresas`: empresas por verificar (y verificadas, con filtro), paginadas, con botón "Verificar".
   - Primero con API simulada que siga esta sección.
+
+## 8. Cambio de contraseña (semana 6, fuera de HU-01 a HU-10)
+
+Entregable: el candidato y la empresa cambian su contraseña desde su perfil, escribiendo la actual. No es una historia
+de usuario del MVP; se agrega porque hoy ninguna cuenta puede cambiar su contraseña. Recuperar una contraseña olvidada
+queda fuera: necesita enviar correos (fuera del MVP).
+
+### 8.1 `PUT /api/usuarios/me/contrasena` — cualquier usuario autenticado (CANDIDATO, EMPRESA o ADMIN)
+
+Cambia la contraseña **del usuario del token**. Cuerpo:
+
+```json
+{ "contrasenaActual": "Medellin2026", "contrasenaNueva": "Envigado2027" }
+```
+
+| Campo | Validación |
+| --- | --- |
+| `contrasenaActual` | `@NotBlank`, `@Size(max = 72)` |
+| `contrasenaNueva` | `@NotBlank`, `@Size(min = 8, max = 72)`; en el dominio, `PoliticaContrasena` (máximo 72 **bytes**) |
+
+| Código | Cuándo |
+| --- | --- |
+| 204 | Contraseña cambiada; sin cuerpo |
+| 400 | Falta un campo o no cumple la validación |
+| 400 `"contrasenaActual: no es correcta"` | La contraseña actual no coincide |
+| 400 `"contrasenaNueva: debe ser distinta de la actual"` | La nueva es igual a la actual |
+| 401 | Sin token o token inválido |
+
+- Una contraseña actual incorrecta responde **400, no 401**: el frontend cierra la sesión ante cualquier 401 y aquí la
+  sesión sigue siendo válida. El mensaje empieza por el nombre del campo, como los demás 400, para marcarlo en el
+  formulario.
+- El orden de validación es: Bean Validation (400), contraseña actual (400), política de la nueva (400) y nueva igual
+  a la actual (400). Así no se revela si la nueva cumple la política a quien no conoce la actual.
+- El JWT no guarda estado: los tokens emitidos antes del cambio siguen valiendo hasta que vencen (120 min), igual que
+  con una cuenta desactivada. El frontend no cierra la sesión al cambiar la contraseña.
+- La ruta no va bajo `/api/auth/**` porque esa ruta es pública.
+
+### 8.2 Postman y frontend
+
+- **Postman** (skill `endpoint-postman`): carpeta Contraseña. Un candidato nuevo cambia su contraseña sin token (401),
+  con la actual errónea (400), con una nueva de 7 caracteres (400), con la misma (400) y bien (204); luego el login con
+  la contraseña anterior responde 401 y con la nueva 200.
+- **Frontend**: componente `CambiarContrasena` (contraseña actual, nueva y confirmación) en `/candidato/perfil` y
+  `/empresa/perfil`, con mensaje de éxito y los errores del servidor marcados en su campo. Primero con API simulada que
+  siga esta sección.
