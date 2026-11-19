@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import com.primerempleo.application.port.in.CambiarContrasenaUseCase.CambiarContrasenaComando;
 import com.primerempleo.application.port.out.CifradorContrasenaPort;
 import com.primerempleo.application.port.out.UsuarioRepositoryPort;
+import com.primerempleo.domain.exception.CuentaDesactivadaException;
 import com.primerempleo.domain.exception.DatosInvalidosException;
 import com.primerempleo.domain.exception.RecursoNoEncontradoException;
 import com.primerempleo.domain.model.Rol;
@@ -77,6 +78,33 @@ class CambioContrasenaServiceTest {
         when(cifrador.coincide("otraClave1", HASH_ACTUAL)).thenReturn(false);
 
         assertThatThrownBy(() -> servicio.cambiarContrasena(comando("otraClave1", "corta")))
+                .hasMessage("contrasenaActual: no es correcta");
+        verify(usuarios, never()).actualizarContrasena(any());
+    }
+
+    @Test
+    void deberiaRechazarSiLaCuentaEstaDesactivada() {
+        Usuario inactivo = new Usuario(USUARIO.id(), USUARIO.email(), HASH_ACTUAL, Rol.CANDIDATO, false,
+                USUARIO.fechaCreacion());
+        when(usuarios.buscarPorId(USUARIO.id())).thenReturn(Optional.of(inactivo));
+        when(cifrador.coincide("Medellin2026", HASH_ACTUAL)).thenReturn(true);
+
+        assertThatThrownBy(() -> servicio.cambiarContrasena(comando("Medellin2026", "Envigado2027")))
+                .isInstanceOf(CuentaDesactivadaException.class)
+                .hasMessage("Tu cuenta está desactivada");
+        verify(usuarios, never()).actualizarContrasena(any());
+    }
+
+    @Test
+    void deberiaRevisarLaActualAntesQueSiLaCuentaEstaDesactivada() {
+        // Como en el login: el 403 de cuenta desactivada solo lo ve quien conoce la contraseña
+        Usuario inactivo = new Usuario(USUARIO.id(), USUARIO.email(), HASH_ACTUAL, Rol.CANDIDATO, false,
+                USUARIO.fechaCreacion());
+        when(usuarios.buscarPorId(USUARIO.id())).thenReturn(Optional.of(inactivo));
+        when(cifrador.coincide("otraClave1", HASH_ACTUAL)).thenReturn(false);
+
+        assertThatThrownBy(() -> servicio.cambiarContrasena(comando("otraClave1", "Envigado2027")))
+                .isInstanceOf(DatosInvalidosException.class)
                 .hasMessage("contrasenaActual: no es correcta");
     }
 

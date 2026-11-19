@@ -112,7 +112,8 @@ export function CambiarContrasena() {
       )}
       {cambiada && !isDirty && (
         <p className={estilos.exito} role="status">
-          Contraseña cambiada. Úsala la próxima vez que inicies sesión.
+          Contraseña cambiada. Úsala la próxima vez que inicies sesión. Si tenías la sesión abierta en otro dispositivo,
+          seguirá activa hasta 2 horas.
         </p>
       )}
 

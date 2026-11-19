@@ -3,6 +3,7 @@ package com.primerempleo.application.service;
 import com.primerempleo.application.port.in.CambiarContrasenaUseCase;
 import com.primerempleo.application.port.out.CifradorContrasenaPort;
 import com.primerempleo.application.port.out.UsuarioRepositoryPort;
+import com.primerempleo.domain.exception.CuentaDesactivadaException;
 import com.primerempleo.domain.exception.DatosInvalidosException;
 import com.primerempleo.domain.exception.RecursoNoEncontradoException;
 import com.primerempleo.domain.model.PoliticaContrasena;
@@ -12,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Cambio de contraseña del usuario del token (docs/contrato-api.md, 8.1).
- * Orden: primero la contraseña actual, luego la política de la nueva y por último que sea distinta;
- * así quien no conoce la actual no aprende nada de la nueva. Todos los errores son 400, no 401:
+ * Orden: primero la contraseña actual, luego que la cuenta esté activa (403), la política de la nueva y por último
+ * que sea distinta; así quien no conoce la actual no aprende nada más. Los errores de datos son 400, no 401:
  * la sesión sigue siendo válida y el frontend cierra la sesión ante un 401.
  */
 @Service
@@ -34,6 +35,10 @@ public class CambioContrasenaService implements CambiarContrasenaUseCase {
                 .orElseThrow(RecursoNoEncontradoException::usuario);
         if (!cifrador.coincide(comando.contrasenaActual(), usuario.passwordHash())) {
             throw new DatosInvalidosException("contrasenaActual: no es correcta");
+        }
+        // Como en el login: el 403 solo se revela a quien conoce la contraseña
+        if (!usuario.activo()) {
+            throw new CuentaDesactivadaException();
         }
         PoliticaContrasena.validar(comando.contrasenaNueva(), "contrasenaNueva");
         if (comando.contrasenaNueva().equals(comando.contrasenaActual())) {

@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.primerempleo.application.port.in.CambiarContrasenaUseCase;
 import com.primerempleo.application.port.in.CambiarContrasenaUseCase.CambiarContrasenaComando;
+import com.primerempleo.domain.exception.CuentaDesactivadaException;
 import com.primerempleo.domain.exception.DatosInvalidosException;
 import com.primerempleo.domain.model.Rol;
 import com.primerempleo.infrastructure.config.CorsConfig;
@@ -98,7 +99,20 @@ class UsuarioControllerTest {
         mockMvc.perform(put(RUTA).header(HttpHeaders.AUTHORIZATION, token(Rol.CANDIDATO))
                         .contentType(MediaType.APPLICATION_JSON).content(CUERPO))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.mensaje").value("contrasenaActual: no es correcta"));
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.error").exists())
+                .andExpect(jsonPath("$.mensaje").value("contrasenaActual: no es correcta"))
+                .andExpect(jsonPath("$.timestamp").exists());
+    }
+
+    @Test
+    void deberiaResponder403SiLaCuentaEstaDesactivada() throws Exception {
+        doThrow(new CuentaDesactivadaException()).when(cambiarContrasena).cambiarContrasena(any());
+
+        mockMvc.perform(put(RUTA).header(HttpHeaders.AUTHORIZATION, token(Rol.EMPRESA))
+                        .contentType(MediaType.APPLICATION_JSON).content(CUERPO))
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.mensaje").value("Tu cuenta está desactivada"));
     }
 
     private String token(Rol rol) {

@@ -103,6 +103,7 @@ export async function cambiarContrasenaMock({ contrasenaActual, contrasenaNueva 
   const cuenta = todasLasCuentas().find((c) => c.id === id)
   if (!cuenta) throw new ErrorApi(404, 'El usuario no existe')
   if (contrasenaDe(cuenta) !== contrasenaActual) throw new ErrorApi(400, 'contrasenaActual: no es correcta')
+  if (!cuenta.activo) throw new ErrorApi(403, 'Tu cuenta está desactivada')
   if (contrasenaNueva.length < 8) throw new ErrorApi(400, 'contrasenaNueva: debe tener al menos 8 caracteres')
   if (new TextEncoder().encode(contrasenaNueva).length > 72) {
     throw new ErrorApi(400, 'contrasenaNueva: es demasiado larga (máximo 72 bytes; las tildes y la ñ ocupan 2)')
